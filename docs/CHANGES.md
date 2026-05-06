@@ -1,95 +1,150 @@
-# Changes — Qué son y cómo trabajar con ellos
+# CHANGES — Roadmap visible (Food Store v5.0)
 
-## ¿Qué es un change?
+> Objetivo: tener **a la vista** qué changes existen, en qué orden se implementan y de qué dependen.
+>
+> Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-Un **change** es la unidad mínima de trabajo en el flujo SDD. No es una tarea suelta ni un ticket — es un conjunto de tres artefactos que juntos describen, diseñan e implementan una funcionalidad del sistema de forma completa y trazable.
-
-Cada change tiene su propia carpeta dentro de `openspec/changes/` y contiene exactamente estos tres archivos:
-
-```
-openspec/changes/nombre-del-change/
-├── proposal.md   ← QUÉ se va a construir y POR QUÉ
-├── design.md     ← CÓMO técnicamente (arquitectura, modelos, endpoints)
-└── tasks.md      ← CHECKLIST atómica de implementación
-```
-
-Una vez que el change está completamente implementado y verificado, se **archiva**: las specs se sincronizan en `openspec/specs/` y la carpeta del change se mueve al historial. Esa documentación viva queda disponible para todos los changes futuros.
+**Última actualización:** 2026-05-06
 
 ---
 
-## ¿Para qué sirve?
+## Cómo usar este roadmap con OPSX
 
-- **Trazabilidad**: cada línea de código tiene una propuesta y un diseño que la justifica.
-- **Revisión antes de implementar**: el diseño se aprueba en papel antes de que el agente escriba una sola línea de código. Un error en el diseño cuesta 0. El mismo error en código cuesta horas de refactor.
-- **Contexto persistente**: cuando el agente empieza un nuevo change, lee las specs de los changes anteriores ya archivados. Sabe qué existe, qué patrones se usaron, y no propone código duplicado o inconsistente.
-- **Documentación automática**: al terminar el proyecto, `openspec/specs/` es la documentación completa del sistema. No hay que escribirla por separado.
+Para trabajar un change, el flujo recomendado es:
+
+```bash
+/opsx:propose <change-name>
+/opsx:apply <change-name>
+/opsx:archive <change-name>
+```
+
+Notas:
+- **No implementes sin artefactos** (`proposal.md` + `design.md` aprobados).
+- **Un change = un commit** (o varios commits atómicos), pero nunca mezcles changes.
+- El orden importa por dependencias (ver tablas).
 
 ---
 
-## ¿Cómo se generan?
+## Sprint 0 — Infraestructura (NO negociable)
 
-Los changes **no se crean a mano** — los genera el agente a partir de los documentos del proyecto y las historias de usuario. El flujo es siempre el mismo:
-
-### 1. Explorar (opcional)
-Antes de proponer, podés pedirle al agente que piense y analice el problema:
-```
-/opsx:explore [tema o pregunta]
-```
-El agente investiga el codebase y razona con vos. No genera código ni toma compromisos. Útil cuando no tenés claro cómo encaja algo en la arquitectura.
-
-### 2. Proponer
-Le pedís al agente que genere los tres artefactos del change:
-```
-/opsx:propose [nombre-del-change]
-```
-El agente lee los documentos en `docs/`, las historias de usuario relevantes y las specs ya archivadas. Genera `proposal.md`, `design.md` y `tasks.md`.
-
-**Antes de continuar, revisás los artefactos.** Verificás que:
-- El diseño respeta la arquitectura en capas (Router → Service → UoW → Repository → Model)
-- Las tareas son atómicas (horas, no días)
-- Las reglas de negocio están reflejadas
-- El stack tecnológico es el correcto
-
-Si algo está mal, lo corregís antes de implementar.
-
-### 3. Aplicar
-Una vez aprobados los artefactos, el agente implementa tarea por tarea:
-```
-/opsx:apply [nombre-del-change]
-```
-El agente lee `design.md` y `tasks.md`, implementa cada tarea en orden y la marca como completada. No improvisa — sigue el plan.
-
-### 4. Archivar
-Cuando todas las tareas están completas y los tests pasan:
-```
-/opsx:archive [nombre-del-change]
-```
-Las specs se sincronizan, el change se mueve al historial y el próximo change ya puede usarlas como contexto.
+| ID | Change | Historias | Funcionalidad | Depende de | Razón |
+|---:|---|---|---|---|---|
+| 0.1 | setup-backend-infrastructure | US-000, US-000a | FastAPI, SQLModel, Alembic, config.py, core/, main.py | — | Base del backend |
+| 0.2 | setup-frontend-infrastructure | US-000c | React, Vite, TypeScript, Tailwind, routing base | — | Base del frontend |
+| 0.3 | database-schema-and-seed | US-000b | PostgreSQL, tablas (ERD v5), migraciones Alembic, seed (roles/estados/pagos/admin) | 0.1 | Necesita Alembic configurado |
+| 0.4 | base-patterns-backend | US-000d | BaseRepository[T], Unit of Work, get_current_user, require_role, RFC 7807 errors | 0.1, 0.3 | Prereq transversal |
+| 0.5 | zustand-stores-setup | US-000e | authStore, cartStore, paymentStore, uiStore + persist selectivo | 0.2 | Base de estado cliente |
 
 ---
 
-## ¿Cómo saber qué changes crear para este proyecto?
+## Epic 01 — Autenticación y autorización
 
-Los changes **no están predefinidos** — son una decisión de diseño que tomás vos basándote en los documentos del sistema.
-
-El primer paso es pedirle al agente que analice los tres documentos de `docs/` y proponga el mapa completo de changes: cuáles son, en qué orden deben implementarse y por qué.
-
-```
-Analizá los documentos en docs/ y proponé el mapa completo 
-de changes para desarrollar Food Store. Para cada change indicá:
-- nombre sugerido
-- qué funcionalidad cubre
-- qué historias de usuario implementa
-- de qué otros changes depende y por qué
-```
-
-Revisás la propuesta, la discutís, la ajustás si hace falta — y recién entonces empezás con el primer `/opsx:propose`.
+| ID | Change | Historias | Funcionalidad | Depende de | Razón |
+|---:|---|---|---|---|---|
+| 1.1 | user-registration | US-001, US-063 | POST /auth/register + rol CLIENT automático + bcrypt | 0.4 | Patrones + UoW |
+| 1.2 | user-login-with-jwt | US-002, US-006, US-073 | POST /auth/login: JWT access (30m) + refresh (7d) + rate limiting 5/15m | 1.1 | Necesita usuarios |
+| 1.3 | token-refresh-and-rotation | US-003 | POST /auth/refresh: rotación + detección replay | 1.2 | Necesita refresh tokens |
+| 1.4 | logout | US-004 | POST /auth/logout: revocar refresh token | 1.3 | Necesita rotación |
+| 1.5 | rbac-and-role-management | US-005, US-006, US-075, US-076 | CRUD roles + asignación (ADMIN) + require_role + guards FE | 1.2 | Roles dentro del JWT |
+| 1.6 | frontend-auth-interceptors | US-066, US-067 | Axios interceptors: attach JWT, refresh automático, manejo global de errores | 1.5, 0.5 | Auth store + RBAC |
 
 ---
 
-## Reglas importantes
+## Epic 02 — Catálogo de productos
 
-- **Nunca implementes sin artefactos.** Si no existe `proposal.md` y `design.md` aprobados, no hay `/opsx:apply`.
-- **El orden importa.** Si el change B necesita código del change A, A tiene que estar archivado antes de proponer B.
-- **Un change = un commit** (o varios commits atómicos). Nunca mezcles dos changes en un mismo commit.
-- **Las specs son código.** Se versionan en git, se revisan en PRs, evolucionan con el proyecto.
+| ID | Change | Historias | Funcionalidad | Depende de | Razón |
+|---:|---|---|---|---|---|
+| 2.1 | category-management-hierarchical | US-007, US-008, US-009, US-010 | Categorías jerárquicas (CTE recursiva) + validación de ciclos | 0.4, 1.5 | UoW + RBAC (STOCK/ADMIN) |
+| 2.2 | ingredient-management | US-011, US-012, US-013, US-014 | CRUD ingredientes + flag alérgeno | 0.4, 1.5 | UoW + RBAC |
+| 2.3 | product-crud-and-stock | US-015, US-020, US-021, US-022 | CRUD productos + PATCH stock + soft delete + snapshot precio | 2.1, 2.2, 0.4, 1.5 | Prereqs catálogo |
+| 2.4 | product-ingredient-association | US-017 | M2M producto-ingrediente + flag es_removible | 2.2, 2.3 | Personalización |
+| 2.5 | public-product-catalog | US-018, US-019, US-023 | GET /productos (paginado/filtros/búsqueda) + detalle + filtro alérgenos | 2.3, 2.4 | Catálogo público |
+
+---
+
+## Epic 03 — Direcciones y perfil de cliente
+
+| ID | Change | Historias | Funcionalidad | Depende de | Razón |
+|---:|---|---|---|---|---|
+| 3.1 | delivery-address-management | US-024, US-025, US-026, US-027, US-028 | CRUD DireccionEntrega por usuario + principal + soft delete + ownership | 1.5 | RBAC + pertenencia |
+| 3.2 | user-profile-view-and-edit | US-061, US-062 | GET/PUT /perfil: ver/editar nombre/email/teléfono | 1.5, 3.1 | Perfil + direcciones |
+
+---
+
+## Epic 04 — Carrito (frontend)
+
+| ID | Change | Historias | Funcionalidad | Depende de |
+|---:|---|---|---|---|
+| 4.1 | shopping-cart-frontend | US-029..US-034 | cartStore: add/remove/update, personalización (exclude ingredientes), persist, totales | 0.5, 2.5 |
+
+---
+
+## Epic 05 — Órdenes y máquina de estados
+
+| ID | Change | Historias | Funcionalidad | Depende de |
+|---:|---|---|---|---|
+| 5.1 | order-creation-with-uow | US-035..US-038 | POST /pedidos atómico: snapshots, validar stock, transacción all-or-nothing | 0.4, 2.3, 3.1, 1.5 |
+| 5.2 | order-fsm-and-state-transitions | US-039..US-042 | FSM (6 estados) + PATCH /pedidos/{id}/estado + RN-01/02/03 | 5.1, 0.4 |
+| 5.3 | order-cancellation | US-043 | Cancelación + restaurar stock atómico + regla ADMIN en EN_PREP | 5.2 |
+| 5.4 | order-history-audit-trail | US-044 | HistorialEstadoPedido append-only + timeline | 5.1, 5.2 |
+| 5.5 | order-list-and-detail | US-049..US-051 | GET /pedidos listado/filtros + detalle completo + pertenencia CLIENT | 5.4, 1.5 |
+
+---
+
+## Epic 06 — Pagos (MercadoPago)
+
+| ID | Change | Historias | Funcionalidad | Depende de |
+|---:|---|---|---|---|
+| 6.1 | mercadopago-payment-creation | US-045, US-046 | POST /pagos/crear + idempotency_key + registrar Pago | 5.1, 0.4, 1.5 |
+| 6.2 | mercadopago-webhook-processing | US-046, US-047 | POST /pagos/webhook: firma + topic=payment + actualizar estado + avanzar pedido + stock atómico | 6.1, 5.2 |
+| 6.3 | payment-retry-and-status | US-048 | 1:N pagos por pedido + GET /pagos/{pedido_id} + reintentos | 6.1, 6.2 |
+| 6.4 | frontend-payment-checkout | US-045, US-048 | Checkout FE con SDK MP + polling estado + UI approved/rejected/pending | 6.1, 0.5, 4.1 |
+
+---
+
+## Epic 07 — Admin panel
+
+| ID | Change | Historias | Funcionalidad | Depende de |
+|---:|---|---|---|---|
+| 7.1 | admin-dashboard-metrics | US-052, US-053 | KPIs + gráficos (recharts) | 5.5, 6.3, 1.5 |
+| 7.2 | admin-user-management | US-054..US-060 | CRUD usuarios + roles + desactivar + soft delete | 1.5, 0.4 |
+| 7.3 | admin-product-management | US-015, US-020..US-022 (panel) | CRUD productos/stock/categorías/ingredientes desde panel | 2.1, 2.2, 2.3, 2.4, 1.5 |
+| 7.4 | admin-order-management | US-041..US-043 | Ver pedidos + avanzar estados + historial + cancelar + filtros | 5.5, 5.3, 5.4, 1.5 |
+| 7.5 | admin-settings-and-configuration | US-064 | Formas de pago habilitadas + parámetros sistema + ver soft-deleted | 1.5 |
+
+---
+
+## Epic 08 — Calidad y robustez (transversal)
+
+| ID | Change | Historias | Funcionalidad | Depende de | Razón |
+|---:|---|---|---|---|---|
+| 8.1 | error-handling-standardized | US-068, US-074 | RFC 7807 + validación inputs + sanitización XSS/SQLi | 0.4, 0.2 | Implementar temprano |
+| 8.2 | testing-and-fixtures | Bonus | Pytest: auth/pagos/pedidos/producto + fixtures + mocks MP | Todos | Opcional recomendado |
+
+---
+
+## Orden de implementación recomendado (macro)
+
+1) **Fundación (Sprint 0):** 0.1 → 0.2 → 0.3 → 0.4 → 0.5
+2) **Auth (Sprint 1):** 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6
+3) **Catálogo (Sprint 2-3):** 2.1 → 2.2 → 2.3 → 2.4 → 2.5
+4) **Cliente (Sprint 3):** 3.1 → 3.2 → 4.1
+5) **Órdenes (Sprint 4-5):** 5.1 → 5.2 → 5.3 → 5.4 → 5.5
+6) **Pagos (Sprint 5-6):** 6.1 → 6.2 → 6.3 → 6.4
+7) **Admin (Sprint 7):** 7.1 → 7.2 → 7.3 → 7.4 → 7.5
+
+Transversal en paralelo: **8.1** temprano; **8.2** cuando el sistema ya tenga endpoints reales para testear.
+
+---
+
+## Decisiones arquitectónicas clave (recordatorio)
+
+1. **Sprint 0 es NO negociable.** Sin `0.4` no hay servicios consistentes; sin `0.3` no hay base para validar lógica.
+2. **Unit of Work es el eje.** Si `0.4` está mal, caen órdenes/pagos.
+3. **Snapshots y soft delete desde el inicio.** Evita refactors caros.
+4. **Carrito es frontend-only** y depende de catálogo público.
+5. **Pagos es lo más complejo:** el webhook debe ser atómico con actualizaciones críticas.
+6. **Admin al final:** depende de casi todo.
+*Las specs son código.** Se versionan en git, se revisan en PRs, evolucionan con el proyecto.
+
+
