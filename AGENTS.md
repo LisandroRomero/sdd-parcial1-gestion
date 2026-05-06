@@ -172,27 +172,21 @@ git status
 
 # 4. Commitear todo junto (usar Conventional Commits si aplica, sino genérico)
 git commit -m "chore: end session — sync engram memories and pending changes"
-```
 
-Esto asegura que **todo** lo trabajado en la sesión (código + memorias de Engram) viaje en un solo commit. Así cuando otros colaboradores hagan `git pull`, reciben tanto los cambios de código como las sesiones de Engram para que el contexto no se pierda.
-
-**Importante:** después del commit, recién ahí llamar a `mem_session_summary` para cerrar la sesión en Engram.
-
-### Verificar estado de sync
-
-```bash
-engram sync --status
-```
-
-Muestra cuántos chunks existen localmente vs en el repo y si hay imports pendientes.
-
-### Exportar memorias antes de pushear
-
-Si el usuario quiere pushear los cambios después del cierre de sesión:
-
-```bash
+# 5. Pushear al remoto para que otros colaboradores reciban los cambios
 git push
 ```
+
+Esto asegura que **todo** lo trabajado en la sesión (código + memorias de Engram) se commitee Y se pushee automáticamente. Así otros colaboradores reciben tanto los cambios de código como las sesiones de Engram sin pasos intermedios.
+
+**Importante:** después del push, recién ahí llamar a `mem_session_summary` para cerrar la sesión en Engram.
+
+### Fallback si el push falla
+
+Si `git push` falla (conflictos en remoto, sin acceso, etc.):
+1. Informar al usuario el error
+2. NO cerrar la sesión en Engram todavía
+3. Esperar indicaciones del usuario
 
 ---
 
