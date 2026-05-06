@@ -4,7 +4,7 @@
 >
 > Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-**Última actualización:** 2026-05-06
+**Última actualización:** 2026-05-06 (mapa recalculado con change archivado)
 
 ---
 
@@ -25,12 +25,22 @@ Notas:
 
 ---
 
+## Ya realizado (archivado en OPSX)
+
+| ID | Change | Estado | Evidencia |
+|---:|---|---|---|
+| 0.0 | scaffolding-monorepo-setup | ✅ Hecho (archivado 2026-04-24) | `openspec/changes/archive/2026-04-24-scaffolding-monorepo-setup/` |
+
+> Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
+
+---
+
 ## Sprint 0 — Infraestructura (NO negociable)
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 0.1 | setup-backend-infrastructure | US-000, US-000a | FastAPI, SQLModel, Alembic, config.py, core/, main.py | — | Base del backend |
-| 0.2 | setup-frontend-infrastructure | US-000c | React, Vite, TypeScript, Tailwind, routing base | — | Base del frontend |
+| 0.1 | setup-backend-infrastructure | US-000, US-000a | FastAPI, SQLModel, Alembic, config.py, core/, main.py | 0.0 | Construye sobre el scaffold |
+| 0.2 | setup-frontend-infrastructure | US-000c | React, Vite, TypeScript, Tailwind, routing base | 0.0 | Construye sobre el scaffold |
 | 0.3 | database-schema-and-seed | US-000b | PostgreSQL, tablas (ERD v5), migraciones Alembic, seed (roles/estados/pagos/admin) | 0.1 | Necesita Alembic configurado |
 | 0.4 | base-patterns-backend | US-000d | BaseRepository[T], Unit of Work, get_current_user, require_role, RFC 7807 errors | 0.1, 0.3 | Prereq transversal |
 | 0.5 | zustand-stores-setup | US-000e | authStore, cartStore, paymentStore, uiStore + persist selectivo | 0.2 | Base de estado cliente |
@@ -145,6 +155,5 @@ Transversal en paralelo: **8.1** temprano; **8.2** cuando el sistema ya tenga en
 4. **Carrito es frontend-only** y depende de catálogo público.
 5. **Pagos es lo más complejo:** el webhook debe ser atómico con actualizaciones críticas.
 6. **Admin al final:** depende de casi todo.
-*Las specs son código.** Se versionan en git, se revisan en PRs, evolucionan con el proyecto.
-
+7. **Las specs son código.** Se versionan en git, se revisan en PRs, evolucionan con el proyecto.
 

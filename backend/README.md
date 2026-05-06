@@ -48,6 +48,16 @@ backend/
 
 ## 🚀 Quick Start
 
+### (Optional) Local PostgreSQL with Docker
+
+If you prefer Docker for local Postgres:
+
+```bash
+docker compose up -d
+```
+
+Then set `DATABASE_URL` in `backend/.env` accordingly (see `backend/.env.example`).
+
 ### 1. Environment Setup
 
 ```bash
@@ -76,11 +86,17 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+If you don't use Poetry, ensure these packages are installed:
+
+```bash
+pip install fastapi uvicorn sqlmodel "pydantic-settings>=2" alembic psycopg[binary]
+```
+
 ### 3. Database Setup
 
 ```bash
-# Run migrations
-alembic upgrade head
+# Run migrations (uses backend/alembic.ini)
+alembic -c backend/alembic.ini upgrade head
 
 # Seed initial data (roles, order states, admin user)
 python -m scripts.seed
@@ -90,10 +106,10 @@ python -m scripts.seed
 
 ```bash
 # Using Poetry
-poetry run uvicorn main:app --reload
+poetry run uvicorn backend.main:app --reload
 
 # Or using pip + venv
-uvicorn main:app --reload
+uvicorn backend.main:app --reload
 ```
 
 Server runs on: **http://localhost:8000**
@@ -203,14 +219,16 @@ postgresql://user:password@localhost:5432/foodstore_dev
 Managed with Alembic:
 ```bash
 # Create new migration
-alembic revision --autogenerate -m "add user table"
+alembic -c backend/alembic.ini revision --autogenerate -m "add user table"
 
 # Apply migrations
-alembic upgrade head
+alembic -c backend/alembic.ini upgrade head
 
 # Rollback one migration
-alembic downgrade -1
+alembic -c backend/alembic.ini downgrade -1
 ```
+
+Migration files live in `backend/alembic/versions/`.
 
 ### Models
 SQLModel models combine SQLAlchemy ORM + Pydantic validation:

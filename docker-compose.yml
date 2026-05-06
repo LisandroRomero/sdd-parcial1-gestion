@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: foodstore
+      POSTGRES_PASSWORD: foodstore
+      POSTGRES_DB: foodstore
+    ports:
+      - "5432:5432"
+    volumes:
+      - foodstore_pgdata:/var/lib/postgresql/data
+
+volumes:
+  foodstore_pgdata:

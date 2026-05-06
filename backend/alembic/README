@@ -1,0 +1,3 @@
+Generic Alembic migration environment.
+
+Migration scripts live in `backend/alembic/versions/`.
