@@ -32,6 +32,7 @@ Notas:
 | 0.0 | scaffolding-monorepo-setup | ✅ Hecho (archivado 2026-04-24) | `openspec/changes/archive/2026-04-24-scaffolding-monorepo-setup/` |
 | 0.2 | setup-frontend-infrastructure | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-setup-frontend-infrastructure/` |
 | 0.3 | database-schema-and-seed | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-database-schema-and-seed/` |
+| 0.4 | base-patterns-backend | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-base-patterns-backend/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -42,7 +43,6 @@ Notas:
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
 | 0.1 | setup-backend-infrastructure | US-000, US-000a | FastAPI, SQLModel, Alembic, config.py, core/, main.py | 0.0 | Construye sobre el scaffold |
-| 0.4 | base-patterns-backend | US-000d | BaseRepository[T], Unit of Work, get_current_user, require_role, RFC 7807 errors | 0.1, 0.3 | Prereq transversal |
 | 0.5 | zustand-stores-setup | US-000e | authStore, cartStore, paymentStore, uiStore + persist selectivo | 0.2 | Base de estado cliente |
 
 ---

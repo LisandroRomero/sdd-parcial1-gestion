@@ -28,11 +28,15 @@ class Settings(BaseSettings):
     # Required for DB operations.
     database_url: str = Field(alias="DATABASE_URL")
 
-    # JWT placeholders (real wiring lives in auth feature).
-    secret_key: str = Field(alias="SECRET_KEY")
+    # JWT configuration.
+    jwt_secret_key: str = Field(alias="JWT_SECRET_KEY")
     access_token_expire_minutes: int = Field(
         default=30,
         alias="ACCESS_TOKEN_EXPIRE_MINUTES",
+    )
+    refresh_token_expire_days: int = Field(
+        default=7,
+        alias="REFRESH_TOKEN_EXPIRE_DAYS",
     )
 
     # CORS

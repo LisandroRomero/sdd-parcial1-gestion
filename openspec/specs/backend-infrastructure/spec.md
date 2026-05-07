@@ -21,6 +21,13 @@ The backend SHALL load its runtime configuration from environment variables (opt
 - **WHEN** the backend starts and a required configuration value is missing
 - **THEN** startup fails with a clear error message describing the missing setting
 
+### Requirement: Configuration includes JWT and password hashing settings
+The backend SHALL expose configuration values for JWT secret key, token expiration, and password hashing algorithm selection.
+
+#### Scenario: JWT settings are configurable via environment
+- **WHEN** the backend starts
+- **THEN** JWT_SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, and REFRESH_TOKEN_EXPIRE_DAYS are loaded from environment variables with safe defaults
+
 ### Requirement: Backend provides a database engine and per-request sessions
 The backend SHALL provide a PostgreSQL database engine configuration and a per-request SQLModel/SQLAlchemy session factory.
 
@@ -29,7 +36,7 @@ The backend SHALL provide a PostgreSQL database engine configuration and a per-r
 - **THEN** it can obtain a session via a shared dependency (e.g., `get_session`) and execute queries within that session
 
 ### Requirement: Unit of Work supports commit/rollback around operations
-The backend SHALL provide a Unit of Work abstraction that wraps a database session and provides commit/rollback behavior.
+The backend SHALL provide a Unit of Work abstraction that wraps a database session and provides commit/rollback behavior. The Unit of Work SHALL also provide access to domain repositories via a `repos` namespace.
 
 #### Scenario: Successful operation commits
 - **WHEN** a service completes a write operation without errors
@@ -38,6 +45,10 @@ The backend SHALL provide a Unit of Work abstraction that wraps a database sessi
 #### Scenario: Failed operation rolls back
 - **WHEN** a service raises an exception during a write operation
 - **THEN** the Unit of Work rolls back the transaction and no partial writes are persisted
+
+#### Scenario: Repository access via UoW repos namespace
+- **WHEN** a service accesses `uow.repos.usuarios`
+- **THEN** it receives a repository instance that shares the UoW's active session
 
 ### Requirement: Alembic migrations are configured for SQLModel metadata
 The backend SHALL be configured with Alembic to manage schema migrations for SQLModel models.
