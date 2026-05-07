@@ -8,6 +8,16 @@ from sqlmodel import SQLModel
 
 from backend.core.config import get_settings
 
+# Import ALL models so SQLModel.metadata is populated for autogenerate.
+from backend.usuarios.model import *  # noqa: F401, F403
+from backend.refreshtokens.model import *  # noqa: F401, F403
+from backend.direcciones.model import *  # noqa: F401, F403
+from backend.categorias.model import *  # noqa: F401, F403
+from backend.productos.model import *  # noqa: F401, F403
+from backend.ingredientes.model import *  # noqa: F401, F403
+from backend.pagos.model import *  # noqa: F401, F403
+from backend.pedidos.model import *  # noqa: F401, F403
+
 
 # Alembic Config object.
 config = context.config
