@@ -130,6 +130,20 @@ Este proyecto usa **OPSX** para gestión de cambios. Los artefactos viven en `op
 - La config del proyecto está en `openspec/config.yaml`
 - Antes de implementar cualquier feature nueva, verificar si existe un change activo con `openspec list --json`
 
+### Sync de docs/CHANGES.md al archivar
+
+Cada vez que completes el archivado de un change, **además de** ejecutar el comando de OPSX, mantené sincronizado el índice humano en `docs/CHANGES.md`:
+
+```bash
+/opsx:archive <change-name>
+```
+
+- Abrí `docs/CHANGES.md` y actualizá `Última actualización` a la fecha del día (formato `YYYY-MM-DD`).
+- Ubicá la fila del change en la tabla donde esté (Sprint/Epic) y **movela** a `## Ya realizado (archivado en OPSX)` (manteniendo la misma estructura de columnas).
+- En la fila movida, `Estado` debe quedar como `✅ Hecho (archivado YYYY-MM-DD)`.
+- En la fila movida, `Evidencia` debe apuntar a `openspec/changes/archive/YYYY-MM-DD-<change-name>/`.
+- Importante: el **source of truth** del cambio sigue siendo `openspec/` (OPSX). `docs/CHANGES.md` es solo un resumen para lectura rápida.
+
 ---
 
 ## Engram — Git Sync (memorias compartidas)
