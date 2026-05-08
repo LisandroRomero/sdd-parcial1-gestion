@@ -39,6 +39,7 @@ Notas:
 | 1.3 | token-refresh-and-rotation | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-token-refresh-and-rotation/` |
 | 1.4 | logout | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-logout/` |
 | 1.5 | rbac-and-role-management | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-rbac-and-role-management/` |
+| 1.6 | frontend-auth-interceptors | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-frontend-auth-interceptors/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -56,8 +57,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 1.6 | frontend-auth-interceptors | US-066, US-067 | Axios interceptors: attach JWT, refresh automático, manejo global de errores | 1.5, 0.5 | Auth store + RBAC |
-
 ---
 
 ## Epic 02 — Catálogo de productos
