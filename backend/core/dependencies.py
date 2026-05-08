@@ -10,6 +10,7 @@ from backend.core.exceptions import ForbiddenException, UnauthorizedException
 from backend.core.security import verify_token
 from backend.core.uow import UnitOfWork
 from backend.usuarios.model import Usuario
+from backend.usuarios.repository import UsuarioRepository
 
 
 # ------------------------------------------------------------------
@@ -90,6 +91,11 @@ def require_role(*roles: str):
 # ------------------------------------------------------------------
 
 
+def _register_repos(uow: UnitOfWork) -> None:
+    """Register all known repositories with the UnitOfWork."""
+    uow.repos.register("usuarios", UsuarioRepository)
+
+
 def get_uow() -> Generator[UnitOfWork, None, None]:
     """FastAPI dependency that provides a per-request UnitOfWork.
 
@@ -111,4 +117,5 @@ def get_uow() -> Generator[UnitOfWork, None, None]:
         return Session(engine)
 
     with UnitOfWork(_session_factory) as uow:
+        _register_repos(uow)
         yield uow
