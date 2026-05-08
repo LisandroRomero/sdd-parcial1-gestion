@@ -88,6 +88,14 @@
       "sessions": 1,
       "memories": 3,
       "prompts": 4
+    },
+    {
+      "id": "34ed78ed",
+      "created_by": "sebad",
+      "created_at": "2026-05-08T03:00:50Z",
+      "sessions": 1,
+      "memories": 2,
+      "prompts": 5
     }
   ]
 }
