@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 import jwt
-from passlib.context import CryptContext
 
 from backend.core.config import get_settings
 from backend.core.exceptions import UnauthorizedException
-
-_pwd_ctx = CryptContext(schemes=["bcrypt"], bcrypt__rounds=12)
 
 ALGORITHM = "HS256"
 
@@ -19,13 +17,11 @@ ALGORITHM = "HS256"
 
 
 def hash_password(plain: str) -> str:
-    """Hash a plaintext password using bcrypt (cost factor 12)."""
-    return _pwd_ctx.hash(plain)
+    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt(rounds=12)).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    """Verify a plaintext password against a bcrypt hash."""
-    return _pwd_ctx.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 # ------------------------------------------------------------------

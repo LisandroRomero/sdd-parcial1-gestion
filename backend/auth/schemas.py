@@ -30,6 +30,29 @@ class RegisterRequest(BaseModel):
         return v
 
 
+class LoginRequest(BaseModel):
+    """Schema for user login request body."""
+
+    email: EmailStr
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("La contraseña debe tener al menos 8 caracteres")
+        return v
+
+
+class TokenResponse(BaseModel):
+    """Schema for the token pair returned after a successful login."""
+
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
 class UserResponse(BaseModel):
     """Schema for user data returned after registration."""
 
@@ -41,3 +64,10 @@ class UserResponse(BaseModel):
     created_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("roles", mode="before")
+    @classmethod
+    def extract_role_codes(cls, v: object) -> list[str]:
+        if v and hasattr(v[0], "rol_codigo"):
+            return [ur.rol_codigo for ur in v]
+        return list(v) if v else []

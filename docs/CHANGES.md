@@ -34,6 +34,8 @@ Notas:
 | 0.3 | database-schema-and-seed | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-database-schema-and-seed/` |
 | 0.4 | base-patterns-backend | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-base-patterns-backend/` |
 | 0.5 | zustand-stores-setup | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-zustand-stores-setup/` |
+| 1.1 | user-registration | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-user-registration/` |
+| 1.2 | user-login-with-jwt | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-user-login-with-jwt/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -51,8 +53,7 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 1.1 | user-registration | US-001, US-063 | POST /auth/register + rol CLIENT automático + bcrypt | 0.4 | Patrones + UoW |
-| 1.2 | user-login-with-jwt | US-002, US-006, US-073 | POST /auth/login: JWT access (30m) + refresh (7d) + rate limiting 5/15m | 1.1 | Necesita usuarios |
+| 1.3 | token-refresh-and-rotation | US-003 | POST /auth/refresh: rotación + detección replay | 1.2 | Necesita refresh tokens |
 | 1.3 | token-refresh-and-rotation | US-003 | POST /auth/refresh: rotación + detección replay | 1.2 | Necesita refresh tokens |
 | 1.4 | logout | US-004 | POST /auth/logout: revocar refresh token | 1.3 | Necesita rotación |
 | 1.5 | rbac-and-role-management | US-005, US-006, US-075, US-076 | CRUD roles + asignación (ADMIN) + require_role + guards FE | 1.2 | Roles dentro del JWT |

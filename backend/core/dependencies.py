@@ -9,6 +9,7 @@ from backend.core.database import engine, get_session
 from backend.core.exceptions import ForbiddenException, UnauthorizedException
 from backend.core.security import verify_token
 from backend.core.uow import UnitOfWork
+from backend.refreshtokens.repository import RefreshTokenRepository
 from backend.usuarios.model import Usuario
 from backend.usuarios.repository import UsuarioRepository
 
@@ -94,6 +95,7 @@ def require_role(*roles: str):
 def _register_repos(uow: UnitOfWork) -> None:
     """Register all known repositories with the UnitOfWork."""
     uow.repos.register("usuarios", UsuarioRepository)
+    uow.repos.register("refresh_tokens", RefreshTokenRepository)
 
 
 def get_uow() -> Generator[UnitOfWork, None, None]:

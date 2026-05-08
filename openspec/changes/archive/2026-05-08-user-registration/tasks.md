@@ -22,7 +22,7 @@
 
 ## 6. Verificación
 
-- [ ] 6.1 Arrancar el servidor con `uvicorn backend.main:app` y verificar que el endpoint aparece en Swagger UI (`/docs`)
-- [ ] 6.2 Probar registro exitoso con curl/httpx contra `POST /api/v1/auth/register`
-- [ ] 6.3 Probar escenarios de error: email duplicado, password corto, email inválido, campos faltantes
-- [ ] 6.4 Verificar en BD que el usuario fue creado con rol CLIENT y password hasheado
+- [x] 6.1 Arrancar el servidor con `uvicorn backend.main:app` y verificar que el endpoint aparece en Swagger UI (`/docs`)
+- [x] 6.2 Probar registro exitoso con curl/httpx contra `POST /api/v1/auth/register`
+- [x] 6.3 Probar escenarios de error: email duplicado, password corto, email inválido, campos faltantes
+- [x] 6.4 Verificar en BD que el usuario fue creado con rol CLIENT y password hasheado
