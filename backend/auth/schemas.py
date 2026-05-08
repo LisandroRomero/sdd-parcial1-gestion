@@ -66,6 +66,19 @@ class RefreshRequest(BaseModel):
         return v
 
 
+class LogoutRequest(BaseModel):
+    """Schema for the logout request body."""
+
+    refresh_token: str
+
+    @field_validator("refresh_token")
+    @classmethod
+    def not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("refresh_token no puede estar vacío")
+        return v
+
+
 class UserResponse(BaseModel):
     """Schema for user data returned after registration."""
 

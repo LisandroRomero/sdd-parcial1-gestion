@@ -11,7 +11,7 @@ from backend.core.security import verify_token
 from backend.core.uow import UnitOfWork
 from backend.refreshtokens.repository import RefreshTokenRepository
 from backend.usuarios.model import Usuario
-from backend.usuarios.repository import UsuarioRepository
+from backend.usuarios.repository import UsuarioRepository, UsuarioRolRepository
 
 
 # ------------------------------------------------------------------
@@ -95,6 +95,7 @@ def require_role(*roles: str):
 def _register_repos(uow: UnitOfWork) -> None:
     """Register all known repositories with the UnitOfWork."""
     uow.repos.register("usuarios", UsuarioRepository)
+    uow.repos.register("usuario_roles", UsuarioRolRepository)
     uow.repos.register("refresh_tokens", RefreshTokenRepository)
 
 

@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, Response, status
 
-from backend.auth.schemas import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, UserResponse
+from backend.auth.schemas import LoginRequest, LogoutRequest, RefreshRequest, RegisterRequest, TokenResponse, UserResponse
 from backend.auth.service import login as login_user
+from backend.auth.service import logout as logout_user
 from backend.auth.service import refresh_tokens as refresh_tokens_service
 from backend.auth.service import register
-from backend.core.dependencies import get_uow
+from backend.core.dependencies import get_current_user, get_uow
 from backend.core.rate_limit import limiter
 from backend.core.uow import UnitOfWork
+from backend.usuarios.model import Usuario
 
 router = APIRouter()
 
@@ -83,3 +85,42 @@ def register_endpoint(
     usuario = register(uow, body)
     uow.commit()
     return UserResponse.model_validate(usuario)
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get the profile of the currently authenticated user",
+)
+def me(
+    current_user: Usuario = Depends(get_current_user),
+) -> UserResponse:
+    """Return the full profile of the authenticated user.
+
+    Requires a valid Bearer access token. Returns the user's id, name,
+    email, and role list without opening an additional database session.
+    """
+    return UserResponse.model_validate(current_user)
+
+
+@router.post(
+    "/logout",
+    response_model=None,
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Revoke refresh token and close session",
+)
+def logout_endpoint(
+    body: LogoutRequest,
+    current_user: Usuario = Depends(get_current_user),
+    uow: UnitOfWork = Depends(get_uow),
+) -> Response:
+    """Revoke the user's refresh token to close the session.
+
+    Requires a valid Bearer access token and the refresh token to revoke.
+    Returns 204 No Content on success. Returns 400 if the refresh token
+    is not found, already revoked, or belongs to a different user.
+    """
+    logout_user(uow, body, current_user)
+    uow.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

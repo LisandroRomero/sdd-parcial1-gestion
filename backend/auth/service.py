@@ -3,9 +3,9 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime, timedelta, timezone
 
-from backend.auth.schemas import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
+from backend.auth.schemas import LoginRequest, LogoutRequest, RefreshRequest, RegisterRequest, TokenResponse
 from backend.core.config import get_settings
-from backend.core.exceptions import ConflictException, UnauthorizedException
+from backend.core.exceptions import BadRequestException, ConflictException, UnauthorizedException
 from backend.core.security import (
     create_access_token,
     create_refresh_token,
@@ -194,3 +194,34 @@ def register(uow: UnitOfWork, body: RegisterRequest) -> Usuario:
     uow.repos.usuarios.session.refresh(usuario)
 
     return usuario
+
+
+def logout(uow: UnitOfWork, body: LogoutRequest, current_user: Usuario) -> None:
+    """Revoke the refresh token to close the user's session.
+
+    Verifies that the presented refresh token exists in BD, is not already
+    revoked, and belongs to the authenticated user, then marks it as revoked.
+    Does NOT commit; the caller (router) is responsible for that.
+
+    Args:
+        uow: The per-request UnitOfWork with registered repositories.
+        body: Validated logout request containing the raw refresh token string.
+        current_user: The authenticated user extracted from the Bearer access token.
+
+    Raises:
+        BadRequestException: If the token is not found, already revoked, or
+            belongs to a different user.
+    """
+    token_hash = hashlib.sha256(body.refresh_token.encode()).hexdigest()
+    stored = uow.repos.refresh_tokens.get_by_hash(token_hash)
+
+    if stored is None:
+        raise BadRequestException(detail="Refresh token inválido")
+
+    if stored.revoked_at is not None:
+        raise BadRequestException(detail="Refresh token ya revocado")
+
+    if stored.usuario_id != current_user.id:
+        raise BadRequestException(detail="Refresh token inválido")
+
+    uow.repos.refresh_tokens.revoke(stored.id)

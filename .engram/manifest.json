@@ -152,6 +152,14 @@
       "sessions": 0,
       "memories": 3,
       "prompts": 0
+    },
+    {
+      "id": "67de9ab3",
+      "created_by": "sebad",
+      "created_at": "2026-05-08T21:58:31Z",
+      "sessions": 0,
+      "memories": 9,
+      "prompts": 0
     }
   ]
 }

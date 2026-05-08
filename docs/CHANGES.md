@@ -37,6 +37,8 @@ Notas:
 | 1.1 | user-registration | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-user-registration/` |
 | 1.2 | user-login-with-jwt | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-user-login-with-jwt/` |
 | 1.3 | token-refresh-and-rotation | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-token-refresh-and-rotation/` |
+| 1.4 | logout | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-logout/` |
+| 1.5 | rbac-and-role-management | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-rbac-and-role-management/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -54,8 +56,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 1.4 | logout | US-004 | POST /auth/logout: revocar refresh token | 1.3 | Necesita rotación |
-| 1.5 | rbac-and-role-management | US-005, US-006, US-075, US-076 | CRUD roles + asignación (ADMIN) + require_role + guards FE | 1.2 | Roles dentro del JWT |
 | 1.6 | frontend-auth-interceptors | US-066, US-067 | Axios interceptors: attach JWT, refresh automático, manejo global de errores | 1.5, 0.5 | Auth store + RBAC |
 
 ---

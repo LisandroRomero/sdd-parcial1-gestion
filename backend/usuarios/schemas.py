@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
+from pydantic import BaseModel, EmailStr, field_validator, ConfigDict, model_validator
 from datetime import datetime
 from typing import Optional
 
@@ -70,3 +70,25 @@ class UsuarioRolRead(BaseModel):
     asignado_por_id: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+_VALID_ROLES = {"ADMIN", "STOCK", "PEDIDOS", "CLIENT"}
+
+
+class AssignRolesRequest(BaseModel):
+    """Schema for replacing a user's full set of roles."""
+
+    roles: list[str]
+
+    @field_validator("roles")
+    @classmethod
+    def validate_roles(cls, v: list[str]) -> list[str]:
+        if not v:
+            raise ValueError("La lista de roles no puede estar vacía")
+        invalid = set(v) - _VALID_ROLES
+        if invalid:
+            raise ValueError(
+                f"Roles inválidos: {', '.join(sorted(invalid))}. "
+                f"Los valores válidos son: {', '.join(sorted(_VALID_ROLES))}"
+            )
+        return v
