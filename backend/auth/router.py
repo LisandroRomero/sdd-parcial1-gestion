@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Request, status
 
-from backend.auth.schemas import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from backend.auth.schemas import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, UserResponse
 from backend.auth.service import login as login_user
+from backend.auth.service import refresh_tokens as refresh_tokens_service
 from backend.auth.service import register
 from backend.core.dependencies import get_uow
 from backend.core.rate_limit import limiter
@@ -33,6 +34,32 @@ async def login(
     Rate limited to 5 requests per IP per 15-minute window.
     """
     result = login_user(uow, body)
+    uow.commit()
+    return result
+
+
+@router.post(
+    "/refresh",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Rotate refresh token and issue a new token pair",
+)
+@limiter.limit("10/15minutes")
+async def refresh(
+    request: Request,
+    body: RefreshRequest,
+    uow: UnitOfWork = Depends(get_uow),
+) -> TokenResponse:
+    """Rotate a refresh token and return a new access + refresh token pair.
+
+    Validates the refresh token (JWT signature, type claim, BD existence, and
+    revocation state), revokes the old token, persists the new one, and returns
+    the fresh pair. If a replay attack is detected, all tokens for the user are
+    invalidated and HTTP 401 is returned.
+
+    Rate limited to 10 requests per IP per 15-minute window.
+    """
+    result = refresh_tokens_service(uow, body)
     uow.commit()
     return result
 

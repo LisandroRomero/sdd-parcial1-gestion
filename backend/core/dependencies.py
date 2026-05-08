@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Generator
 
-from fastapi import Depends, Header
+from fastapi import Depends, Header, HTTPException
 from sqlmodel import Session, select
 
 from backend.core.database import engine, get_session
-from backend.core.exceptions import ForbiddenException, UnauthorizedException
+from backend.core.exceptions import AppException, ForbiddenException, UnauthorizedException
 from backend.core.security import verify_token
 from backend.core.uow import UnitOfWork
 from backend.refreshtokens.repository import RefreshTokenRepository
@@ -101,8 +101,14 @@ def _register_repos(uow: UnitOfWork) -> None:
 def get_uow() -> Generator[UnitOfWork, None, None]:
     """FastAPI dependency that provides a per-request UnitOfWork.
 
-    The UoW is automatically entered on request start and exited
-    (with rollback on exception) when the request finishes.
+    The UoW is automatically entered on request start and exited on
+    request completion. HTTPExceptions are intentional business responses
+    (401, 403, 409, …); any writes made before raising them are committed
+    so that security-critical side-effects (e.g. token revocation on a
+    replay-attack detection) are persisted even though FastAPI returns a
+    non-2xx status.
+
+    Unexpected exceptions trigger a rollback, preserving data integrity.
 
     Usage::
 
@@ -118,6 +124,18 @@ def get_uow() -> Generator[UnitOfWork, None, None]:
     def _session_factory() -> Session:
         return Session(engine)
 
-    with UnitOfWork(_session_factory) as uow:
-        _register_repos(uow)
+    uow = UnitOfWork(_session_factory)
+    uow.__enter__()
+    _register_repos(uow)
+    try:
         yield uow
+    except (HTTPException, AppException):
+        # Intentional business error — commit any writes made before raising
+        # (e.g. revoking all tokens on replay-attack detection).
+        uow.session.commit()
+        raise
+    except Exception:
+        uow.session.rollback()
+        raise
+    finally:
+        uow.session.close()

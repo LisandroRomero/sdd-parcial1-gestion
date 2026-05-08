@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+from fastapi import HTTPException
 from sqlmodel import Session
 
 if TYPE_CHECKING:
@@ -93,8 +94,15 @@ class UnitOfWork:
     def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
         assert self.session is not None
 
+        # HTTPException = intentional business response (401, 403, 409, …).
+        # Any writes made before raising are intentional and must be committed
+        # (e.g. revoking all tokens on replay-attack detection before 401).
+        # Unexpected exceptions (DB errors, assertion failures, etc.) roll back.
         if exc_type is not None:
-            self.session.rollback()
+            if isinstance(exc_type, type) and issubclass(exc_type, HTTPException):
+                self.session.commit()
+            else:
+                self.session.rollback()
 
         self.session.close()
 

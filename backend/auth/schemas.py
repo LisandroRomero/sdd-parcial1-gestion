@@ -53,6 +53,19 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
+class RefreshRequest(BaseModel):
+    """Schema for the refresh token request body."""
+
+    refresh_token: str
+
+    @field_validator("refresh_token")
+    @classmethod
+    def not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("refresh_token no puede estar vacío")
+        return v
+
+
 class UserResponse(BaseModel):
     """Schema for user data returned after registration."""
 
