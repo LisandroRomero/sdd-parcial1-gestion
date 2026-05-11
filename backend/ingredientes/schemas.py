@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
+import math
 
 
 class IngredienteCreate(BaseModel):
@@ -20,6 +21,27 @@ class IngredienteRead(BaseModel):
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class IngredientePaginado(BaseModel):
+    """Paginated response for ingredientes."""
+
+    items: list[IngredienteRead]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+    @classmethod
+    def build(
+        cls,
+        items: list[IngredienteRead],
+        total: int,
+        page: int,
+        size: int,
+    ) -> "IngredientePaginado":
+        pages = math.ceil(total / size) if size > 0 else 0
+        return cls(items=items, total=total, page=page, size=size, pages=pages)
 
 
 class ProductoIngredienteCreate(BaseModel):

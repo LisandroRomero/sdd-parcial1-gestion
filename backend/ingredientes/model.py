@@ -13,6 +13,11 @@ class Ingrediente(SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"server_default": func.now()},
     )
+    deleted_at: Optional[datetime] = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={"nullable": True},
+    )
 
     productos: list["ProductoIngrediente"] = Relationship(back_populates="ingrediente")
 
