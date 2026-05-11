@@ -41,6 +41,7 @@ Notas:
 | 1.4 | logout | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-logout/` |
 | 1.5 | rbac-and-role-management | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-rbac-and-role-management/` |
 | 1.6 | frontend-auth-interceptors | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-frontend-auth-interceptors/` |
+| 2.1 | category-management-hierarchical | ✅ Hecho (archivado 2026-05-11) | `openspec/changes/archive/2026-05-11-category-management-hierarchical/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -63,7 +64,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 2.1 | category-management-hierarchical | US-007, US-008, US-009, US-010 | Categorías jerárquicas (CTE recursiva) + validación de ciclos | 0.4, 1.5 | UoW + RBAC (STOCK/ADMIN) |
 | 2.2 | ingredient-management | US-011, US-012, US-013, US-014 | CRUD ingredientes + flag alérgeno | 0.4, 1.5 | UoW + RBAC |
 | 2.3 | product-crud-and-stock | US-015, US-020, US-021, US-022 | CRUD productos + PATCH stock + soft delete + snapshot precio | 2.1, 2.2, 0.4, 1.5 | Prereqs catálogo |
 | 2.4 | product-ingredient-association | US-017 | M2M producto-ingrediente + flag es_removible | 2.2, 2.3 | Personalización |
