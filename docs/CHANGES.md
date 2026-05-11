@@ -4,7 +4,7 @@
 >
 > Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-**Última actualización:** 2026-05-08
+**Última actualización:** 2026-05-11
 
 ---
 
@@ -30,6 +30,7 @@ Notas:
 | ID | Change | Estado | Evidencia |
 |---:|---|---|---|
 | 0.0 | scaffolding-monorepo-setup | ✅ Hecho (archivado 2026-04-24) | `openspec/changes/archive/2026-04-24-scaffolding-monorepo-setup/` |
+| 0.1 | setup-backend-infrastructure | ✅ Hecho (archivado 2026-05-06) | `openspec/changes/archive/2026-05-06-setup-backend-infrastructure/` |
 | 0.2 | setup-frontend-infrastructure | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-setup-frontend-infrastructure/` |
 | 0.3 | database-schema-and-seed | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-database-schema-and-seed/` |
 | 0.4 | base-patterns-backend | ✅ Hecho (archivado 2026-05-07) | `openspec/changes/archive/2026-05-07-base-patterns-backend/` |
@@ -49,7 +50,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 0.1 | setup-backend-infrastructure | US-000, US-000a | FastAPI, SQLModel, Alembic, config.py, core/, main.py | 0.0 | Construye sobre el scaffold |
 
 ---
 

@@ -168,6 +168,14 @@
       "sessions": 0,
       "memories": 2,
       "prompts": 0
+    },
+    {
+      "id": "9029ba16",
+      "created_by": "lisan",
+      "created_at": "2026-05-11T12:21:38Z",
+      "sessions": 2,
+      "memories": 0,
+      "prompts": 5
     }
   ]
 }
