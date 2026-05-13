@@ -200,6 +200,14 @@
       "sessions": 3,
       "memories": 8,
       "prompts": 13
+    },
+    {
+      "id": "251891e1",
+      "created_by": "lisan",
+      "created_at": "2026-05-13T15:29:23Z",
+      "sessions": 0,
+      "memories": 2,
+      "prompts": 0
     }
   ]
 }

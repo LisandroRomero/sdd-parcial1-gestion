@@ -4,7 +4,7 @@
 >
 > Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-**Última actualización:** 2026-05-11
+**Última actualización:** 2026-05-13
 
 ---
 
@@ -43,6 +43,7 @@ Notas:
 | 1.6 | frontend-auth-interceptors | ✅ Hecho (archivado 2026-05-08) | `openspec/changes/archive/2026-05-08-frontend-auth-interceptors/` |
 | 2.1 | category-management-hierarchical | ✅ Hecho (archivado 2026-05-11) | `openspec/changes/archive/2026-05-11-category-management-hierarchical/` |
 | 2.2 | ingredient-management | ✅ Hecho (archivado 2026-05-11) | `openspec/changes/archive/2026-05-11-ingredient-management/` |
+| 2.3 | product-crud-and-stock | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-product-crud-and-stock/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -65,7 +66,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 2.3 | product-crud-and-stock | US-015, US-020, US-021, US-022 | CRUD productos + PATCH stock + soft delete + snapshot precio | 2.1, 2.2, 0.4, 1.5 | Prereqs catálogo |
 | 2.4 | product-ingredient-association | US-017 | M2M producto-ingrediente + flag es_removible | 2.2, 2.3 | Personalización |
 | 2.5 | public-product-catalog | US-018, US-019, US-023 | GET /productos (paginado/filtros/búsqueda) + detalle + filtro alérgenos | 2.3, 2.4 | Catálogo público |
 
