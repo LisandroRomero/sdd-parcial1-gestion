@@ -1,2 +1,5 @@
 export { ProtectedRoute } from './components/ProtectedRoute'
 export { RoleGuard } from './components/RoleGuard'
+export { PublicOnlyRoute } from './components/PublicOnlyRoute'
+export { loginUser, registerUser, logoutUser } from './api/auth.api'
+export type { LoginResponse, RegisterResponse } from './api/auth.api'

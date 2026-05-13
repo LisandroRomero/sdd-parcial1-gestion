@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
+from sqlalchemy import delete
 from sqlmodel import Session, select
 
-from backend.ingredientes.model import Ingrediente
+from backend.ingredientes.model import Ingrediente, ProductoIngrediente
 from backend.core.patterns import BaseRepository
 
 
@@ -78,3 +79,58 @@ class IngredienteRepository(BaseRepository[Ingrediente]):
         if exclude_id is not None:
             stmt = stmt.where(Ingrediente.id != exclude_id)
         return self.session.exec(stmt).first() is not None
+
+    def agregar_a_producto(
+        self,
+        producto_id: int,
+        ingrediente_id: int,
+        cantidad: Optional[float],
+        unidad: Optional[str],
+    ) -> ProductoIngrediente:
+        asociacion = ProductoIngrediente(
+            producto_id=producto_id,
+            ingrediente_id=ingrediente_id,
+            cantidad=cantidad,
+            unidad=unidad,
+        )
+        self.session.add(asociacion)
+        self.session.flush()
+        self.session.refresh(asociacion)
+        return asociacion
+
+    def existe_asociacion(self, producto_id: int, ingrediente_id: int) -> bool:
+        stmt = select(ProductoIngrediente).where(
+            ProductoIngrediente.producto_id == producto_id,
+            ProductoIngrediente.ingrediente_id == ingrediente_id,
+        )
+        return self.session.exec(stmt).first() is not None
+
+    def listar_por_producto(
+        self, producto_id: int
+    ) -> list[tuple[ProductoIngrediente, Ingrediente]]:
+        stmt = (
+            select(ProductoIngrediente, Ingrediente)
+            .join(Ingrediente, ProductoIngrediente.ingrediente_id == Ingrediente.id)
+            .where(
+                ProductoIngrediente.producto_id == producto_id,
+                Ingrediente.deleted_at.is_(None),
+            )
+        )
+        return list(self.session.exec(stmt).all())
+
+    def remover_de_producto(self, producto_id: int, ingrediente_id: int) -> bool:
+        stmt = select(ProductoIngrediente).where(
+            ProductoIngrediente.producto_id == producto_id,
+            ProductoIngrediente.ingrediente_id == ingrediente_id,
+        )
+        asociacion = self.session.exec(stmt).first()
+        if asociacion is None:
+            return False
+        self.session.exec(
+            delete(ProductoIngrediente).where(
+                ProductoIngrediente.producto_id == producto_id,
+                ProductoIngrediente.ingrediente_id == ingrediente_id,
+            )
+        )
+        self.session.flush()
+        return True

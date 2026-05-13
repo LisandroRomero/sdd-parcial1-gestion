@@ -2,11 +2,11 @@
 
 ### Requirement: El frontend redirige usuarios no autenticados al login
 
-El sistema SHALL proveer un componente `ProtectedRoute` que intercepte la navegación a cualquier ruta privada y redirija al login si el usuario no está autenticado.
+El sistema SHALL proveer un componente `ProtectedRoute` que intercepte la navegación a cualquier ruta privada y redirija al login si el usuario no está autenticado. El componente DEBE estar integrado en `router.tsx` envolviendo todas las rutas que requieren autenticación.
 
 #### Scenario: Usuario no autenticado accede a ruta privada
 
-- **WHEN** un usuario no autenticado intenta navegar a una ruta que requiere autenticación (ej. `/pedidos`, `/perfil`, `/admin`)
+- **WHEN** un usuario no autenticado intenta navegar a una ruta que requiere autenticación (ej. `/`, `/pedidos`, `/perfil`, `/admin`)
 - **THEN** el sistema redirige al usuario a `/login` sin mostrar el contenido de la ruta solicitada
 
 #### Scenario: Usuario autenticado accede a ruta privada
@@ -16,8 +16,13 @@ El sistema SHALL proveer un componente `ProtectedRoute` que intercepte la navega
 
 #### Scenario: Rutas públicas accesibles sin autenticación
 
-- **WHEN** cualquier usuario (autenticado o no) navega a `/`, `/login`, `/registro` o `/catalogo`
-- **THEN** el sistema renderiza el contenido sin verificar autenticación
+- **WHEN** cualquier usuario (autenticado o no) navega a `/login` o `/register`
+- **THEN** el sistema renderiza el contenido sin verificar autenticación (el guard `PublicOnlyRoute` se aplica separadamente)
+
+#### Scenario: ProtectedRoute integrado en el router cubre la ruta raíz
+
+- **WHEN** el router está configurado con `ProtectedRoute` envolviendo la ruta `/` y sus hijos
+- **THEN** cualquier acceso a rutas bajo `/` sin autenticación resulta en redirect a `/login`
 
 ### Requirement: El frontend restringe rutas por rol
 

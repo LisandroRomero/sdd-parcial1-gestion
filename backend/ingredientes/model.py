@@ -26,6 +26,8 @@ class ProductoIngrediente(SQLModel, table=True):
     producto_id: int = Field(foreign_key="producto.id")
     ingrediente_id: int = Field(foreign_key="ingrediente.id")
     es_removible: bool = Field(default=False)
+    cantidad: Optional[float] = Field(default=None)
+    unidad: Optional[str] = Field(default=None, max_length=20)
 
     __table_args__ = (PrimaryKeyConstraint("producto_id", "ingrediente_id"),)
 

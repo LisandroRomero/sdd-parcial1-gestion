@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from backend.core.exceptions import BadRequestException, NotFoundException
 from backend.core.uow import UnitOfWork
 from backend.usuarios.model import Usuario, UsuarioRol
-from backend.usuarios.schemas import AssignRolesRequest
+from backend.usuarios.schemas import AssignRolesRequest, PerfilRead, PerfilUpdate
 
 
 def assign_roles(
@@ -68,3 +70,71 @@ def assign_roles(
     # 5. Refresh and return
     uow.session.refresh(usuario)
     return usuario
+
+
+def get_perfil(uow: UnitOfWork, usuario_id: int) -> PerfilRead:
+    """Return the full profile for the authenticated user.
+
+    Loads ``roles`` and ``direcciones`` relationships.  Only active
+    addresses (``deleted_at IS NULL``) are included in the response —
+    the filtering is delegated to the ``PerfilRead`` validator.
+
+    Args:
+        uow: Active Unit of Work.
+        usuario_id: ID of the authenticated user.
+
+    Returns:
+        ``PerfilRead`` with roles (as string codes) and active addresses.
+
+    Raises:
+        NotFoundException: If the user does not exist.
+    """
+    usuario: Usuario | None = uow.repos.usuarios.get(usuario_id)
+    if usuario is None:
+        raise NotFoundException(detail=f"Usuario con id={usuario_id} no encontrado")
+
+    # Ensure relationships are loaded within the active session
+    uow.session.refresh(usuario)
+    return PerfilRead.model_validate(usuario)
+
+
+def update_perfil(
+    uow: UnitOfWork,
+    usuario_id: int,
+    data: PerfilUpdate,
+) -> PerfilRead:
+    """Update the authenticated user's own profile.
+
+    Only ``nombre``, ``apellido``, and ``telefono`` may be modified.
+    ``email``, ``password_hash``, and ``roles`` are NEVER touched.
+
+    Args:
+        uow: Active Unit of Work.
+        usuario_id: ID of the authenticated user.
+        data: Validated partial update payload.
+
+    Returns:
+        Updated ``PerfilRead``.
+
+    Raises:
+        NotFoundException: If the user does not exist.
+    """
+    usuario: Usuario | None = uow.repos.usuarios.get(usuario_id)
+    if usuario is None:
+        raise NotFoundException(detail=f"Usuario con id={usuario_id} no encontrado")
+
+    # Apply only the fields that were explicitly provided (non-None)
+    if data.nombre is not None:
+        usuario.nombre = data.nombre
+    if data.apellido is not None:
+        usuario.apellido = data.apellido
+    if data.telefono is not None:
+        usuario.telefono = data.telefono
+
+    usuario.updated_at = datetime.utcnow()
+
+    uow.session.add(usuario)
+    uow.session.flush()
+    uow.session.refresh(usuario)
+
+    return PerfilRead.model_validate(usuario)

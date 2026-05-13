@@ -29,7 +29,7 @@ class EstadoPedido(SQLModel, table=True):
 class Pedido(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id")
-    forma_pago_codigo: str = Field(max_length=20, foreign_key="formapago.codigo")
+    forma_pago_codigo: Optional[str] = Field(default=None, max_length=20, foreign_key="formapago.codigo")
     direccion_id: int = Field(foreign_key="direccionentrega.id")
     estado_actual: str = Field(max_length=20, foreign_key="estadopedido.codigo")
     total: Decimal = Field(max_digits=10, decimal_places=2, default=0)

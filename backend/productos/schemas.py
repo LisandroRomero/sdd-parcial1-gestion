@@ -1,7 +1,10 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
+
+from backend.categorias.schemas import CategoriaRead
+from backend.ingredientes.schemas import ProductoIngredienteRead
 
 
 class ProductoCreate(BaseModel):
@@ -92,3 +95,30 @@ class ProductoCategoriaRead(BaseModel):
     es_principal: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductoFiltros(BaseModel):
+    page: int = Field(default=1, ge=1)
+    size: int = Field(default=20, ge=1, le=100)
+    categoria_id: Optional[int] = None
+    disponible: Optional[bool] = None
+    precio_min: Optional[Decimal] = None
+    precio_max: Optional[Decimal] = None
+    busqueda: Optional[str] = None
+    tiene_alergenos: Optional[bool] = None
+
+    @model_validator(mode="after")
+    def validar_rango_precio(self) -> "ProductoFiltros":
+        if (
+            self.precio_min is not None
+            and self.precio_max is not None
+            and self.precio_min > self.precio_max
+        ):
+            raise ValueError("precio_min no puede ser mayor que precio_max")
+        return self
+
+
+class ProductoDetalleRead(ProductoRead):
+    categorias: list[CategoriaRead] = []
+    ingredientes: list[ProductoIngredienteRead] = []
+    tiene_alergenos: bool = False

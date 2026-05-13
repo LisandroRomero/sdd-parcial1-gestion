@@ -31,8 +31,6 @@ class DetallePedidoRead(BaseModel):
 
 
 class PedidoCreate(BaseModel):
-    usuario_id: int
-    forma_pago_codigo: str
     direccion_id: int
     detalles: list[DetallePedidoCreate]
 
@@ -46,7 +44,7 @@ class PedidoUpdate(BaseModel):
 class PedidoRead(BaseModel):
     id: int
     usuario_id: int
-    forma_pago_codigo: str
+    forma_pago_codigo: Optional[str] = None
     direccion_id: int
     estado_actual: str
     total: Decimal

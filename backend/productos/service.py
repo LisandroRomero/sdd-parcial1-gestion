@@ -1,13 +1,23 @@
 
 from __future__ import annotations
 
+import math
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 
 from backend.core.uow import UnitOfWork
 from backend.productos.model import Producto
-from backend.productos.schemas import ProductoCreate, ProductoUpdate
+from backend.productos.schemas import (
+    ProductoCreate,
+    ProductoDetalleRead,
+    ProductoFiltros,
+    ProductoPaginado,
+    ProductoRead,
+    ProductoUpdate,
+)
+from backend.ingredientes.schemas import ProductoIngredienteRead
+from backend.categorias.schemas import CategoriaRead
 
 
 def crear(uow: UnitOfWork, data: ProductoCreate) -> Producto:
@@ -150,3 +160,53 @@ def actualizar_stock(uow: UnitOfWork, id: int, stock_cantidad: int) -> Producto:
 
     producto.stock_cantidad = stock_cantidad
     return repo.update(producto)
+
+
+def listar_publico(uow: UnitOfWork, filtros: ProductoFiltros) -> ProductoPaginado:
+    """Return a paginated public product list filtered by ProductoFiltros."""
+    repo = uow.repos.productos
+    items, total = repo.list_public(filtros)
+    pages = math.ceil(total / filtros.size) if filtros.size > 0 else 0
+    return ProductoPaginado(
+        items=[ProductoRead.model_validate(p) for p in items],
+        total=total,
+        page=filtros.page,
+        size=filtros.size,
+        pages=pages,
+    )
+
+
+def obtener_detalle_publico(uow: UnitOfWork, id: int) -> ProductoDetalleRead:
+    """Return a single active product with its categories, ingredients and alergeno flag."""
+    repo = uow.repos.productos
+    result = repo.get_detalle_public(id)
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PRODUCTO_NOT_FOUND: Producto no encontrado",
+        )
+
+    producto, categorias, ingrediente_tuples = result
+
+    ingredientes_read = [
+        ProductoIngredienteRead(
+            ingrediente_id=pi.ingrediente_id,
+            nombre=ing.nombre,
+            es_alergeno=ing.es_alergeno,
+            cantidad=pi.cantidad,
+            unidad=pi.unidad,
+            es_removible=pi.es_removible,
+        )
+        for pi, ing in ingrediente_tuples
+    ]
+
+    tiene_alergenos = any(ing.es_alergeno for _, ing in ingrediente_tuples)
+
+    detalle = ProductoDetalleRead(
+        **ProductoRead.model_validate(producto).model_dump(),
+        categorias=[CategoriaRead.model_validate(c) for c in categorias],
+        ingredientes=ingredientes_read,
+        tiene_alergenos=tiene_alergenos,
+    )
+    return detalle

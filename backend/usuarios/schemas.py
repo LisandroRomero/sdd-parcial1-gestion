@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr, field_validator, ConfigDict, model_val
 from datetime import datetime
 from typing import Optional
 
+from backend.direcciones.schemas import DireccionEntregaRead
+
 
 class UsuarioCreate(BaseModel):
     email: EmailStr
@@ -91,4 +93,54 @@ class AssignRolesRequest(BaseModel):
                 f"Roles inválidos: {', '.join(sorted(invalid))}. "
                 f"Los valores válidos son: {', '.join(sorted(_VALID_ROLES))}"
             )
+        return v
+
+
+class PerfilRead(BaseModel):
+    """Full profile schema for the authenticated user, including roles and active addresses."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    nombre: Optional[str] = None
+    apellido: Optional[str] = None
+    email: str
+    telefono: Optional[str] = None
+    roles: list[str] = []
+    activo: bool
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    direcciones: list[DireccionEntregaRead] = []
+
+    @field_validator("roles", mode="before")
+    @classmethod
+    def extract_role_codes(cls, v: object) -> list[str]:
+        if v and hasattr(next(iter(v), None), "rol_codigo"):
+            return [ur.rol_codigo for ur in v]
+        return list(v) if v else []
+
+    @field_validator("direcciones", mode="before")
+    @classmethod
+    def filter_active_direcciones(cls, v: object) -> list:
+        if v is None:
+            return []
+        return [d for d in v if getattr(d, "deleted_at", None) is None]
+
+
+class PerfilUpdate(BaseModel):
+    """Schema for updating the authenticated user's own profile.
+
+    Only ``nombre``, ``apellido``, and ``telefono`` are editable.
+    Email, password, and roles are intentionally excluded.
+    """
+
+    nombre: Optional[str] = None
+    apellido: Optional[str] = None
+    telefono: Optional[str] = None
+
+    @field_validator("nombre", "apellido")
+    @classmethod
+    def reject_empty_strings(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v == "":
+            raise ValueError("Este campo no puede ser una cadena vacía")
         return v

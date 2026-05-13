@@ -44,6 +44,14 @@ Notas:
 | 2.1 | category-management-hierarchical | ✅ Hecho (archivado 2026-05-11) | `openspec/changes/archive/2026-05-11-category-management-hierarchical/` |
 | 2.2 | ingredient-management | ✅ Hecho (archivado 2026-05-11) | `openspec/changes/archive/2026-05-11-ingredient-management/` |
 | 2.3 | product-crud-and-stock | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-product-crud-and-stock/` |
+| 2.4 | product-ingredient-association | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-product-ingredient-association/` |
+| 2.5 | public-product-catalog | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-public-product-catalog/` |
+| 3.1 | delivery-address-management | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-delivery-address-management/` |
+| 3.2 | user-profile-view-and-edit | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-user-profile-view-and-edit/` |
+| 4.1 | shopping-cart-frontend | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-shopping-cart-frontend/` |
+| 5.1 | order-creation-with-uow | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-order-creation-with-uow/` |
+| 1.7 | frontend-auth-pages | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-auth-pages/` |
+| 2.6 | frontend-product-catalog-page | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-product-catalog-page/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -60,14 +68,13 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
+
 ---
 
 ## Epic 02 — Catálogo de productos
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 2.4 | product-ingredient-association | US-017 | M2M producto-ingrediente + flag es_removible | 2.2, 2.3 | Personalización |
-| 2.5 | public-product-catalog | US-018, US-019, US-023 | GET /productos (paginado/filtros/búsqueda) + detalle + filtro alérgenos | 2.3, 2.4 | Catálogo público |
 
 ---
 
@@ -75,8 +82,7 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 3.1 | delivery-address-management | US-024, US-025, US-026, US-027, US-028 | CRUD DireccionEntrega por usuario + principal + soft delete + ownership | 1.5 | RBAC + pertenencia |
-| 3.2 | user-profile-view-and-edit | US-061, US-062 | GET/PUT /perfil: ver/editar nombre/email/teléfono | 1.5, 3.1 | Perfil + direcciones |
+| 3.3 | frontend-profile-and-addresses | US-024..US-028, US-061, US-062 | Página /perfil: ver/editar nombre+teléfono + gestión de direcciones (agregar, editar, eliminar, marcar principal) | 3.1, 3.2, 1.7 | Sin UI el cliente no puede gestionar su perfil ni sus direcciones |
 
 ---
 
@@ -84,7 +90,7 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 4.1 | shopping-cart-frontend | US-029..US-034 | cartStore: add/remove/update, personalización (exclude ingredientes), persist, totales | 0.5, 2.5 |
+| 4.2 | frontend-checkout-page | US-035..US-038 | Página de checkout: resumen del carrito + selector de dirección + botón "Confirmar pedido" → llama POST /pedidos → pantalla de confirmación con número de pedido | 4.1, 5.1, 3.1, 1.7 |
 
 ---
 
@@ -92,11 +98,11 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 5.1 | order-creation-with-uow | US-035..US-038 | POST /pedidos atómico: snapshots, validar stock, transacción all-or-nothing | 0.4, 2.3, 3.1, 1.5 |
 | 5.2 | order-fsm-and-state-transitions | US-039..US-042 | FSM (6 estados) + PATCH /pedidos/{id}/estado + RN-01/02/03 | 5.1, 0.4 |
 | 5.3 | order-cancellation | US-043 | Cancelación + restaurar stock atómico + regla ADMIN en EN_PREP | 5.2 |
 | 5.4 | order-history-audit-trail | US-044 | HistorialEstadoPedido append-only + timeline | 5.1, 5.2 |
 | 5.5 | order-list-and-detail | US-049..US-051 | GET /pedidos listado/filtros + detalle completo + pertenencia CLIENT | 5.4, 1.5 |
+| 5.6 | frontend-order-history | US-049..US-051, US-044 | Página "Mis Pedidos": listado con estado + detalle de pedido con líneas, timeline de historial de estados | 5.5, 1.7 |
 
 ---
 
@@ -107,7 +113,7 @@ Notas:
 | 6.1 | mercadopago-payment-creation | US-045, US-046 | POST /pagos/crear + idempotency_key + registrar Pago | 5.1, 0.4, 1.5 |
 | 6.2 | mercadopago-webhook-processing | US-046, US-047 | POST /pagos/webhook: firma + topic=payment + actualizar estado + avanzar pedido + stock atómico | 6.1, 5.2 |
 | 6.3 | payment-retry-and-status | US-048 | 1:N pagos por pedido + GET /pagos/{pedido_id} + reintentos | 6.1, 6.2 |
-| 6.4 | frontend-payment-checkout | US-045, US-048 | Checkout FE con SDK MP + polling estado + UI approved/rejected/pending | 6.1, 0.5, 4.1 |
+| 6.4 | frontend-payment-checkout | US-045, US-048 | Checkout FE con SDK MP + tokenización tarjeta en browser (RN-AU09) + polling estado + UI approved/rejected/pending | 6.1, 4.2, 0.5 |
 
 ---
 
@@ -129,18 +135,21 @@ Notas:
 |---:|---|---|---|---|---|
 | 8.1 | error-handling-standardized | US-068, US-074 | RFC 7807 + validación inputs + sanitización XSS/SQLi | 0.4, 0.2 | Implementar temprano |
 | 8.2 | testing-and-fixtures | Bonus | Pytest: auth/pagos/pedidos/producto + fixtures + mocks MP | Todos | Opcional recomendado |
+| 8.3 | frontend-error-and-empty-states | US-068, US-074 | Páginas 404/500, estados vacíos globales, toast system, error boundaries por sección | 0.2, 1.7 | UX mínima indispensable |
+| 8.4 | frontend-home-and-navigation | — | Landing page con CTA al catálogo, navbar con links a Catálogo/Mis Pedidos/Perfil, footer | 1.7, 2.6 | Sin nav el usuario no puede moverse por la app |
 
 ---
 
 ## Orden de implementación recomendado (macro)
 
 1) **Fundación (Sprint 0):** 0.1 → 0.2 → 0.3 → 0.4 → 0.5
-2) **Auth (Sprint 1):** 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6
-3) **Catálogo (Sprint 2-3):** 2.1 → 2.2 → 2.3 → 2.4 → 2.5
-4) **Cliente (Sprint 3):** 3.1 → 3.2 → 4.1
-5) **Órdenes (Sprint 4-5):** 5.1 → 5.2 → 5.3 → 5.4 → 5.5
+2) **Auth (Sprint 1):** 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 → **1.7** (login/register pages)
+3) **Catálogo (Sprint 2-3):** 2.1 → 2.2 → 2.3 → 2.4 → 2.5 → **2.6** (catalog page)
+4) **Cliente (Sprint 3):** 3.1 → 3.2 → **3.3** (profile page) → 4.1 → **4.2** (checkout page)
+5) **Órdenes (Sprint 4-5):** 5.1 → 5.2 → 5.3 → 5.4 → 5.5 → **5.6** (order history page)
 6) **Pagos (Sprint 5-6):** 6.1 → 6.2 → 6.3 → 6.4
 7) **Admin (Sprint 7):** 7.1 → 7.2 → 7.3 → 7.4 → 7.5
+8) **Calidad (transversal):** **8.3** (error states) + **8.4** (home + nav) → 8.1 → 8.2
 
 Transversal en paralelo: **8.1** temprano; **8.2** cuando el sistema ya tenga endpoints reales para testear.
 

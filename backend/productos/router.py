@@ -9,11 +9,21 @@ from backend.core.database import engine
 from backend.core.dependencies import require_role
 from backend.core.exceptions import AppException
 from backend.core.uow import UnitOfWork
+from backend.ingredientes import service as ingrediente_service
+from backend.ingredientes.repository import IngredienteRepository
+from backend.ingredientes.schemas import (
+    ProductoIngredienteCreate,
+    ProductoIngredienteListResponse,
+    ProductoIngredienteRead,
+)
 from backend.productos import service as producto_service
 from backend.productos.repository import ProductoRepository
 from backend.productos.schemas import (
     DisponibilidadUpdate,
     ProductoCreate,
+    ProductoDetalleRead,
+    ProductoFiltros,
+    ProductoPaginado,
     ProductoRead,
     ProductoUpdate,
     StockUpdate,
@@ -24,12 +34,12 @@ router = APIRouter()
 
 
 # ------------------------------------------------------------------
-# Local UoW factory — registers ProductoRepository
+# Local UoW factory — registers ProductoRepository + IngredienteRepository
 # ------------------------------------------------------------------
 
 
 def _get_uow() -> Generator[UnitOfWork, None, None]:
-    """Per-request UnitOfWork with ProductoRepository registered."""
+    """Per-request UnitOfWork with ProductoRepository and IngredienteRepository registered."""
     from fastapi import HTTPException
 
     def _session_factory() -> Session:
@@ -38,6 +48,7 @@ def _get_uow() -> Generator[UnitOfWork, None, None]:
     uow = UnitOfWork(_session_factory)
     uow.__enter__()
     uow.repos.register("productos", lambda s: ProductoRepository(s))
+    uow.repos.register("ingredientes", lambda s: IngredienteRepository(s))
     try:
         yield uow
     except (HTTPException, AppException):
@@ -53,6 +64,32 @@ def _get_uow() -> Generator[UnitOfWork, None, None]:
 # ------------------------------------------------------------------
 # Endpoints
 # ------------------------------------------------------------------
+
+
+@router.get(
+    "/",
+    response_model=ProductoPaginado,
+    status_code=status.HTTP_200_OK,
+    summary="List public products with optional filters",
+)
+def listar_productos_publico(
+    filtros: ProductoFiltros = Depends(),
+    uow: UnitOfWork = Depends(_get_uow),
+) -> ProductoPaginado:
+    return producto_service.listar_publico(uow, filtros)
+
+
+@router.get(
+    "/{id}",
+    response_model=ProductoDetalleRead,
+    status_code=status.HTTP_200_OK,
+    summary="Get public product detail with categories and ingredients",
+)
+def obtener_producto_publico(
+    id: int,
+    uow: UnitOfWork = Depends(_get_uow),
+) -> ProductoDetalleRead:
+    return producto_service.obtener_detalle_publico(uow, id)
 
 
 @router.post(
@@ -136,3 +173,55 @@ def actualizar_stock(
     producto = producto_service.actualizar_stock(uow, id, body.stock_cantidad)
     uow.commit()
     return ProductoRead.model_validate(producto)
+
+
+# ------------------------------------------------------------------
+# Product-ingredient association endpoints
+# ------------------------------------------------------------------
+
+
+@router.post(
+    "/{id}/ingredientes",
+    response_model=ProductoIngredienteRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Associate an ingredient with a product",
+)
+def agregar_ingrediente(
+    id: int,
+    body: ProductoIngredienteCreate,
+    uow: UnitOfWork = Depends(_get_uow),
+    _: Usuario = Depends(require_role("ADMIN", "STOCK")),
+) -> ProductoIngredienteRead:
+    result = ingrediente_service.asociar_ingrediente(uow, id, body)
+    uow.commit()
+    return result
+
+
+@router.get(
+    "/{id}/ingredientes",
+    response_model=ProductoIngredienteListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List ingredients of a product",
+)
+def listar_ingredientes(
+    id: int,
+    uow: UnitOfWork = Depends(_get_uow),
+) -> ProductoIngredienteListResponse:
+    return ingrediente_service.listar_ingredientes_producto(uow, id)
+
+
+@router.delete(
+    "/{id}/ingredientes/{ingrediente_id}",
+    response_model=None,
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove an ingredient from a product",
+)
+def remover_ingrediente(
+    id: int,
+    ingrediente_id: int,
+    uow: UnitOfWork = Depends(_get_uow),
+    _: Usuario = Depends(require_role("ADMIN", "STOCK")),
+) -> Response:
+    ingrediente_service.desasociar_ingrediente(uow, id, ingrediente_id)
+    uow.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

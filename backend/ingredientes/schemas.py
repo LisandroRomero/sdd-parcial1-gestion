@@ -45,14 +45,22 @@ class IngredientePaginado(BaseModel):
 
 
 class ProductoIngredienteCreate(BaseModel):
-    producto_id: int
     ingrediente_id: int
-    es_removible: bool = False
+    cantidad: Optional[float] = None
+    unidad: Optional[str] = None
 
 
 class ProductoIngredienteRead(BaseModel):
-    producto_id: int
     ingrediente_id: int
+    nombre: str
+    es_alergeno: bool
+    cantidad: Optional[float]
+    unidad: Optional[str]
     es_removible: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductoIngredienteListResponse(BaseModel):
+    items: list[ProductoIngredienteRead]
+    total: int

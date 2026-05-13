@@ -3,7 +3,15 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from backend.ingredientes.model import Ingrediente
-from backend.ingredientes.schemas import IngredienteCreate, IngredientePaginado, IngredienteRead, IngredienteUpdate
+from backend.ingredientes.schemas import (
+    IngredienteCreate,
+    IngredientePaginado,
+    IngredienteRead,
+    IngredienteUpdate,
+    ProductoIngredienteCreate,
+    ProductoIngredienteListResponse,
+    ProductoIngredienteRead,
+)
 from backend.core.exceptions import ConflictException, NotFoundException
 from backend.core.uow import UnitOfWork
 
@@ -121,3 +129,85 @@ def eliminar(uow: UnitOfWork, id: int) -> None:
 
     ingrediente.deleted_at = datetime.now(tz=timezone.utc)
     repo.update(ingrediente)
+
+
+def asociar_ingrediente(
+    uow: UnitOfWork,
+    producto_id: int,
+    data: ProductoIngredienteCreate,
+) -> "ProductoIngredienteRead":
+    productos_repo = uow.repos.productos
+    ingredientes_repo = uow.repos.ingredientes
+
+    producto = productos_repo.get_by_id_active(producto_id)
+    if producto is None:
+        raise NotFoundException(detail="PRODUCTO_NOT_FOUND: Producto no encontrado")
+
+    ingrediente = ingredientes_repo.get_by_id_active(data.ingrediente_id)
+    if ingrediente is None:
+        raise NotFoundException(detail="INGREDIENTE_NOT_FOUND: Ingrediente no encontrado")
+
+    if ingredientes_repo.existe_asociacion(producto_id, data.ingrediente_id):
+        raise ConflictException(
+            detail="PRODUCTO_INGREDIENTE_DUPLICADO: El ingrediente ya está asociado a este producto"
+        )
+
+    asociacion = ingredientes_repo.agregar_a_producto(
+        producto_id=producto_id,
+        ingrediente_id=data.ingrediente_id,
+        cantidad=data.cantidad,
+        unidad=data.unidad,
+    )
+    return ProductoIngredienteRead(
+        ingrediente_id=asociacion.ingrediente_id,
+        nombre=ingrediente.nombre,
+        es_alergeno=ingrediente.es_alergeno,
+        cantidad=asociacion.cantidad,
+        unidad=asociacion.unidad,
+        es_removible=asociacion.es_removible,
+    )
+
+
+def listar_ingredientes_producto(
+    uow: UnitOfWork,
+    producto_id: int,
+) -> ProductoIngredienteListResponse:
+    productos_repo = uow.repos.productos
+    ingredientes_repo = uow.repos.ingredientes
+
+    producto = productos_repo.get_by_id_active(producto_id)
+    if producto is None:
+        raise NotFoundException(detail="PRODUCTO_NOT_FOUND: Producto no encontrado")
+
+    filas = ingredientes_repo.listar_por_producto(producto_id)
+    items = [
+        ProductoIngredienteRead(
+            ingrediente_id=asociacion.ingrediente_id,
+            nombre=ingrediente.nombre,
+            es_alergeno=ingrediente.es_alergeno,
+            cantidad=asociacion.cantidad,
+            unidad=asociacion.unidad,
+            es_removible=asociacion.es_removible,
+        )
+        for asociacion, ingrediente in filas
+    ]
+    return ProductoIngredienteListResponse(items=items, total=len(items))
+
+
+def desasociar_ingrediente(
+    uow: UnitOfWork,
+    producto_id: int,
+    ingrediente_id: int,
+) -> None:
+    productos_repo = uow.repos.productos
+    ingredientes_repo = uow.repos.ingredientes
+
+    producto = productos_repo.get_by_id_active(producto_id)
+    if producto is None:
+        raise NotFoundException(detail="PRODUCTO_NOT_FOUND: Producto no encontrado")
+
+    removed = ingredientes_repo.remover_de_producto(producto_id, ingrediente_id)
+    if not removed:
+        raise NotFoundException(
+            detail="PRODUCTO_INGREDIENTE_NOT_FOUND: Asociación no encontrada"
+        )

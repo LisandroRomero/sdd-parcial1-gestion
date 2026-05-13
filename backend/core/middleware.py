@@ -3,7 +3,10 @@ from __future__ import annotations
 import uuid
 
 from fastapi import FastAPI, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from backend.core.exceptions import AppException
@@ -28,8 +31,28 @@ def register_exception_handlers(app: FastAPI) -> None:
             content={"detail": exc.detail},
         )
 
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ):
+        return await request_validation_exception_handler(request, exc)
+
+    @app.exception_handler(ValidationError)
+    async def pydantic_validation_exception_handler(
+        request: Request, exc: ValidationError
+    ) -> JSONResponse:
+        import json
+        errors = json.loads(exc.json())
+        return JSONResponse(
+            status_code=422,
+            content={"detail": errors},
+        )
+
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        import traceback
+        print(f"UNHANDLED EXCEPTION: {repr(exc)}", flush=True)
+        traceback.print_exception(type(exc), exc, exc.__traceback__)
         return JSONResponse(
             status_code=500,
             content={"detail": "Internal server error"},
@@ -54,6 +77,15 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
         call_next: RequestResponseEndpoint,
     ) -> JSONResponse:
         request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except ValidationError as exc:
+            import json
+            errors = json.loads(exc.json())
+            return JSONResponse(
+                status_code=422,
+                content={"detail": errors},
+                headers={"X-Request-ID": request_id},
+            )
         response.headers["X-Request-ID"] = request_id
         return response
