@@ -83,6 +83,8 @@ class HistorialEstadoPedido(SQLModel, table=True):
         default=None, max_length=20, foreign_key="estadopedido.codigo"
     )
     estado_hasta: str = Field(max_length=20, foreign_key="estadopedido.codigo")
+    usuario_id: Optional[int] = Field(default=None, foreign_key="usuario.id")
+    motivo: Optional[str] = Field(default=None, max_length=255)
     created_at: Optional[datetime] = Field(
         default=None,
         sa_type=DateTime(timezone=True),
@@ -98,3 +100,4 @@ class HistorialEstadoPedido(SQLModel, table=True):
         back_populates="historiales_hasta",
         sa_relationship_kwargs={"foreign_keys": "HistorialEstadoPedido.estado_hasta"},
     )
+    usuario: Optional["Usuario"] = Relationship(back_populates="historial_estados_pedido")

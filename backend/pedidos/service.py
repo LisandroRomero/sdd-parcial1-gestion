@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from backend.core.exceptions import (
     BadRequestException,
+    ConflictException,
     ForbiddenException,
     NotFoundException,
     ValidationException,
@@ -12,6 +13,26 @@ from backend.core.uow import UnitOfWork
 from backend.pedidos.model import DetallePedido, HistorialEstadoPedido, Pedido
 from backend.pedidos.schemas import PedidoCreate
 from backend.usuarios.model import Usuario
+
+# Mapa de transiciones válidas: {estado_origen: {estado_destino: set[roles_permitidos]}}
+# Roles: "CLIENT", "ADMIN", "PEDIDOS", "SISTEMA" (reservado para webhooks)
+TRANSICIONES_VALIDAS: dict[str, dict[str, set[str]]] = {
+    "PENDIENTE": {
+        "CONFIRMADO": {"SISTEMA"},        # Webhook MP — pago aprobado
+        "CANCELADO": {"CLIENT", "ADMIN", "PEDIDOS"},
+    },
+    "CONFIRMADO": {
+        "EN_PREP": {"PEDIDOS"},
+        "CANCELADO": {"ADMIN", "PEDIDOS"},
+    },
+    "EN_PREP": {
+        "EN_CAMINO": {"PEDIDOS"},
+        "CANCELADO": {"ADMIN"},           # Solo ADMIN puede cancelar desde preparación
+    },
+    "EN_CAMINO": {
+        "ENTREGADO": {"PEDIDOS"},
+    },
+}
 
 
 def crear_pedido(
@@ -74,7 +95,7 @@ def crear_pedido(
         estado_actual="PENDIENTE",
         total=Decimal("0"),
         costo_envio=Decimal("0"),
-        forma_pago_codigo=None,
+        forma_pago_codigo=data.forma_pago_codigo,
     )
     uow.repos.pedidos.add(pedido)
     # add() calls flush + refresh, so pedido.id is now populated
@@ -113,5 +134,131 @@ def crear_pedido(
     uow.session.flush()
 
     # -- 5.13: Return populated pedido ------------------------------------
+    uow.session.refresh(pedido)
+    return pedido
+
+
+def _validar_transicion(estado_actual: str, nuevo_estado: str, roles_usuario: set[str]) -> None:
+    """Validate a state transition against the FSM map and user roles.
+
+    Raises:
+        ConflictException: If the current state is terminal.
+        ValidationException: If the transition doesn't exist in the FSM map.
+        ForbiddenException: If the user's roles don't permit this transition.
+    """
+    # Check if current state has any transitions defined (terminal check)
+    if estado_actual not in TRANSICIONES_VALIDAS:
+        raise ConflictException(
+            f"PEDIDO_ESTADO_TERMINAL: El pedido está en estado terminal '{estado_actual}'"
+        )
+
+    # Check if the target state is a valid transition from current state
+    transiciones_destino = TRANSICIONES_VALIDAS.get(estado_actual, {})
+    if nuevo_estado not in transiciones_destino:
+        raise ValidationException(
+            f"PEDIDO_TRANSICION_INVALIDA: No se puede transicionar de '{estado_actual}' a '{nuevo_estado}'"
+        )
+
+    # Check if user has the required role
+    roles_permitidos = transiciones_destino[nuevo_estado]
+    if not roles_usuario.intersection(roles_permitidos):
+        raise ForbiddenException(
+            f"PEDIDO_ROL_NO_AUTORIZADO: Se requiere uno de los roles: {', '.join(roles_permitidos)}"
+        )
+
+
+def avanzar_estado(
+    uow: UnitOfWork,
+    pedido_id: int,
+    nuevo_estado: str,
+    usuario_actual: Usuario,
+) -> Pedido:
+    """Advance an order to a new state after validating the FSM transition.
+
+    Flow:
+    1. Load pedido (404 if not found).
+    2. Validate transition + role.
+    3. Insert HistorialEstadoPedido entry.
+    4. Update pedido.estado_actual.
+    5. Return refreshed pedido.
+    """
+    pedido = uow.repos.pedidos.get(pedido_id)
+    if pedido is None:
+        raise NotFoundException("PEDIDO_NOT_FOUND")
+
+    user_roles = {ur.rol_codigo for ur in usuario_actual.roles}
+
+    _validar_transicion(pedido.estado_actual, nuevo_estado, user_roles)
+
+    # Create history entry
+    historial = HistorialEstadoPedido(
+        pedido_id=pedido.id,
+        estado_desde=pedido.estado_actual,
+        estado_hasta=nuevo_estado,
+        usuario_id=usuario_actual.id,
+        motivo=None,  # Sin motivo en avance normal
+    )
+    uow.session.add(historial)
+
+    # Update pedido state
+    pedido.estado_actual = nuevo_estado
+    uow.repos.pedidos.update(pedido)
+    uow.session.flush()
+
+    uow.session.refresh(pedido)
+    return pedido
+
+
+def cancelar_pedido(
+    uow: UnitOfWork,
+    pedido_id: int,
+    motivo: str,
+    usuario_actual: Usuario,
+) -> Pedido:
+    """Cancel an order with mandatory reason.
+
+    Flow:
+    1. Load pedido (404 if not found).
+    2. Validate motivo is provided.
+    3. Validate transition + role.
+    4. Restore stock if pedido was already confirmed (stock was deducted).
+    5. Insert HistorialEstadoPedido entry with motivo.
+    6. Update pedido.estado_actual = "CANCELADO".
+    7. Return refreshed pedido.
+    """
+    # Validate motivo
+    if not motivo or not motivo.strip():
+        raise ValidationException("PEDIDO_MOTIVO_REQUERIDO: El motivo es obligatorio para cancelar un pedido")
+
+    pedido = uow.repos.pedidos.get(pedido_id)
+    if pedido is None:
+        raise NotFoundException("PEDIDO_NOT_FOUND")
+
+    user_roles = {ur.rol_codigo for ur in usuario_actual.roles}
+
+    _validar_transicion(pedido.estado_actual, "CANCELADO", user_roles)
+
+    # Restore stock if the order had stock deducted (CONFIRMADO or beyond)
+    # PENDIENTE hasn't deducted stock yet
+    estados_con_stock_descontado = {"CONFIRMADO", "EN_PREP", "EN_CAMINO"}
+    if pedido.estado_actual in estados_con_stock_descontado:
+        productos_stock = uow.repos.pedidos.get_productos_by_pedido(pedido_id)
+        uow.repos.pedidos.restaurar_stock_productos(productos_stock)
+
+    # Create history entry
+    historial = HistorialEstadoPedido(
+        pedido_id=pedido.id,
+        estado_desde=pedido.estado_actual,
+        estado_hasta="CANCELADO",
+        usuario_id=usuario_actual.id,
+        motivo=motivo.strip(),
+    )
+    uow.session.add(historial)
+
+    # Update pedido state
+    pedido.estado_actual = "CANCELADO"
+    uow.repos.pedidos.update(pedido)
+    uow.session.flush()
+
     uow.session.refresh(pedido)
     return pedido

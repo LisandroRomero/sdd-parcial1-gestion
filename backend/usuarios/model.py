@@ -35,6 +35,7 @@ class Usuario(SQLModel, table=True):
     refresh_tokens: list["RefreshToken"] = Relationship(back_populates="usuario")
     direcciones: list["DireccionEntrega"] = Relationship(back_populates="usuario")
     pedidos: list["Pedido"] = Relationship(back_populates="usuario")
+    historial_estados_pedido: list["HistorialEstadoPedido"] = Relationship(back_populates="usuario")
 
 
 class Rol(SQLModel, table=True):

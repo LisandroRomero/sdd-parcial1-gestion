@@ -35,8 +35,8 @@ def seed_estados_pedido(session: Session) -> None:
     estados = [
         {"codigo": "PENDIENTE", "descripcion": "Pedido pendiente", "es_terminal": False},
         {"codigo": "CONFIRMADO", "descripcion": "Pedido confirmado", "es_terminal": False},
-        {"codigo": "PREPARACION", "descripcion": "En preparación", "es_terminal": False},
-        {"codigo": "ENVIADO", "descripcion": "Enviado al cliente", "es_terminal": False},
+        {"codigo": "EN_PREP", "descripcion": "En preparación", "es_terminal": False},
+        {"codigo": "EN_CAMINO", "descripcion": "Enviado al cliente", "es_terminal": False},
         {"codigo": "ENTREGADO", "descripcion": "Entregado", "es_terminal": True},
         {"codigo": "CANCELADO", "descripcion": "Cancelado", "es_terminal": True},
     ]

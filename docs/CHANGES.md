@@ -55,6 +55,7 @@ Notas:
 | 3.3 | frontend-profile-and-addresses | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-profile-and-addresses/` |
 | — | fix-direcciones-empty-state-modal | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-fix-direcciones-empty-state-modal/` |
 | 4.2 | frontend-checkout-page | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-checkout-page/` |
+| 5.2 | order-fsm-and-state-transition | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-order-fsm-and-state-transition/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -98,7 +99,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 5.2 | order-fsm-and-state-transitions | US-039..US-042 | FSM (6 estados) + PATCH /pedidos/{id}/estado + RN-01/02/03 | 5.1, 0.4 |
 | 5.3 | order-cancellation | US-043 | Cancelación + restaurar stock atómico + regla ADMIN en EN_PREP | 5.2 |
 | 5.4 | order-history-audit-trail | US-044 | HistorialEstadoPedido append-only + timeline | 5.1, 5.2 |
 | 5.5 | order-list-and-detail | US-049..US-051 | GET /pedidos listado/filtros + detalle completo + pertenencia CLIENT | 5.4, 1.5 |

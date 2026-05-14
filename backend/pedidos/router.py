@@ -2,17 +2,25 @@ from __future__ import annotations
 
 from collections.abc import Generator
 
-from fastapi import APIRouter, Depends, status
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session
 
 from backend.core.database import engine
-from backend.core.dependencies import require_role
-from backend.core.exceptions import AppException
+from backend.core.dependencies import get_current_user, require_role
+from backend.core.exceptions import AppException, ForbiddenException, NotFoundException
 from backend.core.uow import UnitOfWork
 from backend.direcciones.repository import DireccionEntregaRepository
 from backend.pedidos import service as pedido_service
 from backend.pedidos.repository import DetallePedidoRepository, PedidoRepository
-from backend.pedidos.schemas import PedidoCreate, PedidoRead
+from backend.pedidos.schemas import (
+    AvanzarEstadoRequest,
+    HistorialEstadoRead,
+    PedidoCreate,
+    PedidoListRead,
+    PedidoRead,
+)
 from backend.productos.repository import ProductoRepository
 from backend.usuarios.model import Usuario
 
@@ -69,3 +77,109 @@ def crear_pedido(
     pedido = pedido_service.crear_pedido(uow, body, current_user)
     uow.commit()
     return PedidoRead.model_validate(pedido)
+
+
+@router.patch(
+    "/{id}/estado",
+    response_model=PedidoRead,
+    summary="Advance order state",
+)
+def avanzar_estado_endpoint(
+    id: int,
+    body: AvanzarEstadoRequest,
+    uow: UnitOfWork = Depends(_get_uow),
+    current_user: Usuario = Depends(require_role("ADMIN", "PEDIDOS", "CLIENT")),
+) -> PedidoRead:
+    pedido = pedido_service.avanzar_estado(uow, id, body.nuevo_estado, current_user)
+    uow.commit()
+    return PedidoRead.model_validate(pedido)
+
+
+@router.delete(
+    "/{id}",
+    response_model=PedidoRead,
+    summary="Cancel an order",
+)
+def cancelar_pedido_endpoint(
+    id: int,
+    motivo: str = Query(..., description="Cancellation reason (required)"),
+    uow: UnitOfWork = Depends(_get_uow),
+    current_user: Usuario = Depends(require_role("ADMIN", "PEDIDOS", "CLIENT")),
+) -> PedidoRead:
+    pedido = pedido_service.cancelar_pedido(uow, id, motivo, current_user)
+    uow.commit()
+    return PedidoRead.model_validate(pedido)
+
+
+@router.get(
+    "/{id}",
+    response_model=PedidoRead,
+    summary="Get order by ID",
+)
+def get_pedido(
+    id: int,
+    uow: UnitOfWork = Depends(_get_uow),
+    current_user: Usuario = Depends(get_current_user),
+) -> PedidoRead:
+    pedido = uow.repos.pedidos.get(id)
+    if pedido is None:
+        raise NotFoundException("PEDIDO_NOT_FOUND")
+
+    # CLIENT users can only see their own orders
+    user_roles = {ur.rol_codigo for ur in current_user.roles}
+    if "CLIENT" in user_roles and len(user_roles) == 1 and pedido.usuario_id != current_user.id:
+        raise ForbiddenException("PEDIDO_NO_AUTORIZADO")
+
+    return PedidoRead.model_validate(pedido)
+
+
+@router.get(
+    "/",
+    response_model=PedidoListRead,
+    summary="List orders",
+)
+def list_pedidos(
+    estado: Optional[str] = Query(default=None, description="Filter by state"),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    uow: UnitOfWork = Depends(_get_uow),
+    current_user: Usuario = Depends(get_current_user),
+) -> PedidoListRead:
+    user_roles = {ur.rol_codigo for ur in current_user.roles}
+
+    # CLIENT users only see their own orders
+    usuario_id: Optional[int] = None
+    if user_roles == {"CLIENT"}:
+        usuario_id = current_user.id
+
+    items, total = uow.repos.pedidos.list_pedidos(
+        usuario_id=usuario_id,
+        estado=estado,
+        limit=limit,
+        offset=offset,
+    )
+
+    return PedidoListRead(
+        items=[PedidoRead.model_validate(p) for p in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get(
+    "/{id}/historial",
+    response_model=list[HistorialEstadoRead],
+    summary="Get order state history",
+)
+def get_historial_pedido(
+    id: int,
+    uow: UnitOfWork = Depends(_get_uow),
+    current_user: Usuario = Depends(get_current_user),
+) -> list[HistorialEstadoRead]:
+    pedido = uow.repos.pedidos.get(id)
+    if pedido is None:
+        raise NotFoundException("PEDIDO_NOT_FOUND")
+
+    historial = uow.repos.pedidos.get_historial(id)
+    return [HistorialEstadoRead.model_validate(h) for h in historial]

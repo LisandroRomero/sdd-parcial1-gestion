@@ -1,2 +1,2 @@
-export { createPedido } from './api'
-export type { PedidoCreate, PedidoRead, DetallePedidoCreate, DetallePedidoRead } from './types'
+export { createPedido, avanzarEstado, cancelarPedido, getPedido, listarPedidos, getHistorialPedido } from './api'
+export type { PedidoCreate, PedidoRead, DetallePedidoCreate, DetallePedidoRead, AvanzarEstadoRequest, HistorialEstadoRead } from './types'

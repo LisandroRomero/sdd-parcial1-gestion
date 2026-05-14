@@ -32,13 +32,14 @@ class DetallePedidoRead(BaseModel):
 
 class PedidoCreate(BaseModel):
     direccion_id: int
+    forma_pago_codigo: str
     detalles: list[DetallePedidoCreate]
 
 
 class PedidoUpdate(BaseModel):
     forma_pago_codigo: Optional[str] = None
     direccion_id: Optional[int] = None
-    estado_actual: Optional[str] = None
+    # NOTA: estado_actual eliminado — las transiciones usan AvanzarEstadoRequest
 
 
 class PedidoRead(BaseModel):
@@ -52,5 +53,37 @@ class PedidoRead(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     detalles: list[DetallePedidoRead] = []
+    historial_estados: list["HistorialEstadoRead"] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AvanzarEstadoRequest(BaseModel):
+    nuevo_estado: str
+    motivo: Optional[str] = None
+
+    @field_validator("motivo")
+    @classmethod
+    def motivo_no_vacio(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v.strip() == "":
+            raise ValueError("motivo cannot be empty")
+        return v
+
+
+class HistorialEstadoRead(BaseModel):
+    id: int
+    pedido_id: int
+    estado_desde: Optional[str] = None
+    estado_hasta: str
+    usuario_id: Optional[int] = None
+    motivo: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PedidoListRead(BaseModel):
+    items: list[PedidoRead]
+    total: int
+    limit: int
+    offset: int

@@ -1,4 +1,7 @@
+## MODIFIED Requirements
+
 ### Requirement: Cliente puede crear un pedido
+
 El sistema SHALL permitir a un usuario autenticado con rol CLIENTE crear un pedido a partir de una lista de productos, una forma de pago, y una dirección de entrega de su propiedad. La operación SHALL ser atómica: o todos los recursos se persisten correctamente o ninguno se persiste.
 
 #### Scenario: Creación exitosa con stock suficiente
@@ -37,76 +40,7 @@ El sistema SHALL permitir a un usuario autenticado con rol CLIENTE crear un pedi
 - **WHEN** la solicitud no incluye header `Authorization: Bearer <token>`
 - **THEN** el sistema devuelve `401 Unauthorized`
 
-### Requirement: Snapshot de precios en líneas de pedido
-El sistema SHALL capturar el precio y nombre del producto al momento de la creación del pedido. Los campos `nombre_snapshot` y `precio_snapshot` de `DetallePedido` NO SHALL ser actualizados si el precio del producto cambia posteriormente.
-
-#### Scenario: Snapshot correcto al crear
-- **WHEN** se crea un pedido con un producto que tiene `precio_base = 1500.00` y `nombre = "Pizza Margherita"`
-- **THEN** el `DetallePedido` resultante tiene `precio_snapshot = 1500.00` y `nombre_snapshot = "Pizza Margherita"` independientemente de cambios futuros al producto
-
-#### Scenario: Subtotal calculado correctamente
-- **WHEN** se crea una línea con `precio_snapshot = 1500.00` y `cantidad = 3`
-- **THEN** `subtotal = 4500.00` y el `total` del pedido incluye este subtotal
-
-### Requirement: Descuento atómico de stock
-El sistema SHALL decrementar `Producto.stock_cantidad` en la cantidad solicitada para cada línea de pedido dentro de la misma transacción de creación. Si la transacción falla, el stock SHALL retornar a su valor original.
-
-#### Scenario: Stock decrementado tras creación exitosa
-- **WHEN** se crea un pedido con 2 unidades del producto P1 que tenía stock = 10
-- **THEN** el producto P1 tiene `stock_cantidad = 8` después del commit
-
-#### Scenario: Stock no decrementado si la operación falla
-- **WHEN** la creación falla por stock insuficiente en cualquier producto
-- **THEN** ningún `stock_cantidad` es modificado (rollback total)
-
-#### Scenario: Concurrencia — dos pedidos simultáneos del mismo producto con stock = 1
-- **WHEN** dos requests concurrentes intentan comprar el mismo producto con stock = 1
-- **THEN** solo uno tiene éxito (201) y el otro recibe 422 `PEDIDO_STOCK_INSUFICIENTE`; el stock final es 0 y no negativo
-
-### Requirement: Registro de historial de estado inicial
-El sistema SHALL crear una entrada en `HistorialEstadoPedido` con `estado_desde = NULL` y `estado_hasta = "PENDIENTE"` al momento de crear el pedido.
-
-#### Scenario: Historial creado en creación de pedido
-- **WHEN** se crea un pedido exitosamente
-- **THEN** existe exactamente una entrada en `HistorialEstadoPedido` con `pedido_id` del nuevo pedido, `estado_desde = NULL` y `estado_hasta = "PENDIENTE"`
-
-### Requirement: Frontend entity para pedidos
-
-El frontend SHALL definir tipos `PedidoCreate` y `PedidoRead` en `frontend/src/entities/pedidos/types.ts`.
-
-`PedidoCreate` SHALL tener:
-- `detalles: DetallePedidoCreate[]` — cada uno con `producto_id: number` y `cantidad: number`
-- `direccion_id: number`
-
-`PedidoRead` SHALL incluir al menos:
-- `id: number`
-- `estado_actual: string`
-- `total: number`
-- `direccion: { calle: string, numero: string, ciudad: string }`
-- `detalles: { nombre_snapshot: string, cantidad: number, precio_snapshot: number, subtotal: number }[]`
-- `created_at: string`
-
-#### Scenario: Tipos pedidos definidos correctamente
-
-- **WHEN** el frontend importa `PedidoCreate` y `PedidoRead`
-- **THEN** ambos tipos SHALL existir y ser usables en las llamadas API
-
-### Requirement: Frontend API para crear pedido
-
-El frontend SHALL implementar una función `createPedido` en `frontend/src/entities/pedidos/api.ts` que realice `POST /api/v1/pedidos` usando el cliente Axios con interceptor JWT.
-
-La función SHALL aceptar `data: PedidoCreate` y retornar una promesa de tipo `PedidoRead`.
-
-#### Scenario: createPedido exitoso
-
-- **WHEN** se llama `createPedido({ detalles: [{ producto_id: 1, cantidad: 2 }], direccion_id: 5 })`
-- **AND** el backend responde con `201` y un `PedidoRead`
-- **THEN** la función retorna el `PedidoRead` recibido
-
-#### Scenario: createPedido con error
-
-- **WHEN** el backend responde con error 422 o 400
-- **THEN** la función rechaza la promesa con el error del backend
+### ADDED Requirements
 
 ### Requirement: Frontend entity para AvanzarEstadoRequest
 
