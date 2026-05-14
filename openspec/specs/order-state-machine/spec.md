@@ -22,6 +22,8 @@ El sistema SHALL mantener un mapa explícito de transiciones válidas entre esta
 
 El sistema SHALL validar que el rol del usuario autenticado tenga permiso para ejecutar la transición solicitada, según la matriz de roles por transición. Si el usuario no tiene el rol requerido, la transición SHALL ser rechazada.
 
+Además, el frontend SHALL mostrar u ocultar el botón "Cancelar pedido" según el `estado_actual` del pedido y el `rol` del usuario autenticado, siguiendo las reglas de visibilidad definidas.
+
 #### Scenario: GESTOR_PEDIDOS avanza de CONFIRMADO a EN_PREP
 - **WHEN** un usuario con rol `GESTOR_PEDIDOS` solicita avanzar un pedido de `"CONFIRMADO"` a `"EN_PREP"`
 - **THEN** el sistema acepta la transición (rol autorizado)
@@ -37,6 +39,30 @@ El sistema SHALL validar que el rol del usuario autenticado tenga permiso para e
 #### Scenario: GESTOR_PEDIDOS intenta cancelar desde EN_PREP
 - **WHEN** un usuario con rol `GESTOR_PEDIDOS` solicita cancelar un pedido en estado `"EN_PREP"`
 - **THEN** el sistema rechaza con `403 Forbidden` y error `PEDIDO_ROL_NO_AUTORIZADO`
+
+#### Scenario: CLIENTE ve botón cancelar en PENDIENTE
+- **WHEN** un usuario con rol `CLIENTE` visualiza un pedido propio con `estado_actual = "PENDIENTE"`
+- **THEN** el botón "Cancelar pedido" SHALL ser visible
+
+#### Scenario: CLIENTE no ve botón cancelar en CONFIRMADO
+- **WHEN** un usuario con rol `CLIENTE` visualiza un pedido propio con `estado_actual = "CONFIRMADO"`
+- **THEN** el botón "Cancelar pedido" NO SHALL ser visible
+
+#### Scenario: ADMIN ve botón cancelar en EN_PREP
+- **WHEN** un usuario con rol `ADMIN` visualiza un pedido con `estado_actual = "EN_PREP"`
+- **THEN** el botón "Cancelar pedido" SHALL ser visible
+
+#### Scenario: GESTOR_PEDIDOS ve botón cancelar en CONFIRMADO
+- **WHEN** un usuario con rol `GESTOR_PEDIDOS` visualiza un pedido con `estado_actual = "CONFIRMADO"`
+- **THEN** el botón "Cancelar pedido" SHALL ser visible
+
+#### Scenario: GESTOR_PEDIDOS no ve botón cancelar en EN_PREP
+- **WHEN** un usuario con rol `GESTOR_PEDIDOS` visualiza un pedido con `estado_actual = "EN_PREP"`
+- **THEN** el botón "Cancelar pedido" NO SHALL ser visible
+
+#### Scenario: GESTOR_STOCK no ve botón cancelar en ningún estado
+- **WHEN** un usuario con rol `GESTOR_STOCK` visualiza cualquier pedido
+- **THEN** el botón "Cancelar pedido" NO SHALL ser visible en ningún estado
 
 ### Requirement: Cancelación con motivo obligatorio
 

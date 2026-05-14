@@ -30,9 +30,16 @@ export function OrderConfirmation({ pedidoId, total }: OrderConfirmationProps) {
         </CardContent>
       </Card>
 
-      <Button onClick={() => navigate('/catalogo')} variant="primary" size="lg">
-        Volver al catálogo
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        {pedidoId > 0 && (
+          <Button onClick={() => navigate(`/pedidos/${pedidoId}`)} variant="outline" size="lg">
+            Ver detalle del pedido
+          </Button>
+        )}
+        <Button onClick={() => navigate('/catalogo')} variant="primary" size="lg">
+          Volver al catálogo
+        </Button>
+      </div>
     </div>
   )
 }

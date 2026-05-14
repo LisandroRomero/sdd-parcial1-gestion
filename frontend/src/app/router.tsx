@@ -12,6 +12,7 @@ const CatalogoPage = lazy(() => import('../pages/catalogo').then(m => ({ default
 const ProductoDetallePage = lazy(() => import('../pages/catalogo').then(m => ({ default: m.ProductoDetallePage })))
 const PerfilPage = lazy(() => import('../pages/perfil').then(m => ({ default: m.PerfilPage })))
 const CheckoutPage = lazy(() => import('../pages/checkout').then(m => ({ default: m.CheckoutPage })))
+const PedidoDetailPage = lazy(() => import('../pages/pedidos').then(m => ({ default: m.PedidoDetailPage })))
 
 export const router = createBrowserRouter([
   // Public-only routes (redirect to / if already authenticated)
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
           { index: true, element: <HomePage /> },
           { path: 'perfil', element: <PerfilPage /> },
           { path: 'checkout', element: <CheckoutPage /> },
+          { path: 'pedidos/:id', element: <PedidoDetailPage /> },
         ],
       },
     ],

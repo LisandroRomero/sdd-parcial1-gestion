@@ -120,6 +120,7 @@ Después de crear un pedido exitosamente, el sistema SHALL mostrar una pantalla 
 - Mensaje "¡Pedido confirmado!"
 - Resumen breve (cantidad de items, total, dirección de entrega)
 - Botón "Volver al catálogo" que navega a la página de productos
+- Enlace "Ver detalle del pedido" que navega a la página de detalle del pedido (ej: `/pedidos/{id}`)
 
 #### Scenario: Confirmación muestra número de pedido
 
@@ -131,3 +132,13 @@ Después de crear un pedido exitosamente, el sistema SHALL mostrar una pantalla 
 
 - **WHEN** el usuario hace clic en "Volver al catálogo"
 - **THEN** el sistema navega a la página de productos
+
+#### Scenario: Navegar al detalle del pedido desde confirmación
+- **WHEN** el usuario hace clic en "Ver detalle del pedido"
+- **THEN** el sistema navega a `/pedidos/{id}` donde `id` es el `pedido.id` del pedido recién creado
+
+#### Scenario: Ambos links son visibles simultáneamente
+- **WHEN** la pantalla de confirmación se renderiza
+- **THEN** tanto "Volver al catálogo" como "Ver detalle del pedido" SHALL estar visibles
+- **THEN** "Ver detalle del pedido" SHALL mostrarse como un link o botón secundario (outline style)
+- **THEN** "Volver al catálogo" SHALL mostrarse como el botón primario
