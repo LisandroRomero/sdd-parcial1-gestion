@@ -56,9 +56,9 @@ El frontend SHALL mantener un Zustand store `useCartStore` exportado desde `fron
 
 El store SHALL exponer el siguiente estado:
 - `items: CartItem[]` — lista de ítems en el carrito
-- `totalItems: number` — suma de cantidades de todos los ítems
-- `totalPrice: number` — suma de `precio_base * cantidad` por item
-- `isCartEmpty: boolean` — `true` si `items.length === 0`
+- `totalItems: number` — suma de cantidades de todos los ítems (valor computado desde `items`)
+- `totalPrice: number` — suma de `precio_base * cantidad` por item (valor computado desde `items`)
+- `isCartEmpty: boolean` — `true` si `items.length === 0` (valor computado desde `items`)
 
 El store SHALL exponer las siguientes acciones:
 - `addItem(product, cantidad, personalizacion?)` — agrega un producto al carrito
@@ -66,12 +66,14 @@ El store SHALL exponer las siguientes acciones:
 - `updateQuantity(itemId, cantidad)` — actualiza cantidad; si `cantidad <= 0` elimina el ítem
 - `toggleIngrediente(itemId, ingredienteId)` — alterna la presencia de `ingredienteId` en `item.ingredientesExcluidos`
 - `clearCart()` — vacía el carrito completamente
-- `getItemsForCheckout(): DetallePedidoCreate[]` — devuelve los items listos para enviar a `POST /pedidos`, mapeando cada `CartItem` a `{ producto_id: number, cantidad: number }`
+- `getItemsForCheckout(): DetallePedidoCreate[]` — devuelve los items listos para enviar a `POST /pedidos`, mapeando cada `CartItem` a `{ producto_id: number, cantidad: number, personalizacion: number[] }`
 
 El store SHALL usar Zustand `persist` middleware con:
 - `name: 'food-store-cart'`
 - `version: 2`
-- `partialize`: persistir SOLO `items`; los valores derivados (`totalItems`, `totalPrice`, `isCartEmpty`) se recomputan al hidratarse
+- `partialize`: persistir SOLO `items` (no `totalItems`, `totalPrice`, `isCartEmpty`)
+- `merge`: función personalizada que toma el estado persistido y el inicial, extrae `items` del persistido (o `[]` si no hay), recalcula `totalItems`, `totalPrice` e `isCartEmpty` a partir de `items`, y retorna el estado completo con los valores recalculados
+- `migrate`: función que maneja la transición de versión 1 a versión 2 — extrae SOLO `items` del estado persistido previo (descarta campos legacy como `totalItems`, `totalPrice`, `isCartEmpty`, `precio_unitario`) y retorna `{ items }` para que `merge` recalcule los derivados
 
 #### Scenario: Agregar un producto nuevo al carrito
 
@@ -132,18 +134,19 @@ El store SHALL usar Zustand `persist` middleware con:
 - **THEN** `totalPrice` SHALL ser `0`
 - **THEN** `isCartEmpty` SHALL ser `true`
 
-#### Scenario: Persistencia sobrevive a recarga de página
+#### Scenario: Derived state is correct after persist hydration
 
 - **GIVEN** el carrito tiene items
 - **WHEN** la página es recargada
 - **THEN** `items` SHALL contener los mismos items
-- **THEN** `totalItems` y `totalPrice` SHALL recalcularse correctamente desde los items persistidos
+- **THEN** `totalItems` y `totalPrice` SHALL recalcularse correctamente desde los items persistidos (via custom `merge`)
+- **THEN** la función `migrate` SHALL ejecutarse si hay cambio de versión
 
-#### Scenario: getItemsForCheckout mapea CartItems a DetallePedidoCreate
+#### Scenario: getItemsForCheckout mapea CartItems a DetallePedidoCreate con personalizacion
 
-- **GIVEN** `items = [{ productoId: 1, cantidad: 2 }, { productoId: 3, cantidad: 1 }]`
+- **GIVEN** `items = [{ productoId: 1, cantidad: 2, ingredientesExcluidos: [3] }, { productoId: 5, cantidad: 1, ingredientesExcluidos: [] }]`
 - **WHEN** `getItemsForCheckout()` es llamado
-- **THEN** retorna `[{ producto_id: 1, cantidad: 2 }, { producto_id: 3, cantidad: 1 }]`
+- **THEN** retorna `[{ producto_id: 1, cantidad: 2, personalizacion: [3] }, { producto_id: 5, cantidad: 1, personalizacion: [] }]`
 
 ---
 

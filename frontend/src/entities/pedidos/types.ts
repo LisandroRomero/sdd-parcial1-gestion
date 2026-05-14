@@ -1,7 +1,7 @@
 export interface DetallePedidoCreate {
   producto_id: number
   cantidad: number
-  ingredientes_excluidos?: number[]
+  personalizacion?: number[]
 }
 
 export interface PedidoCreate {

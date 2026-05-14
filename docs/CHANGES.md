@@ -57,6 +57,8 @@ Notas:
 | 4.2 | frontend-checkout-page | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-checkout-page/` |
 | 5.2 | order-fsm-and-state-transition | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-order-fsm-and-state-transition/` |
 | 5.3 | order-cancellation | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-order-cancellation/` |
+| — | fix-cart-persistence-and-checkout | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-fix-cart-persistence-and-checkout/` |
+| — | fix-lazy-routing-suspense | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-fix-lazy-routing-suspense/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 

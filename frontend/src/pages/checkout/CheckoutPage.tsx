@@ -43,7 +43,8 @@ export function CheckoutPage() {
   const handleConfirmar = () => {
     if (!selectedDireccionId) return
     checkoutMutation.mutate({
-      direccion_entrega_id: selectedDireccionId,
+      direccion_id: selectedDireccionId,
+      forma_pago_codigo: 'EFECTIVO',
       detalles: getItemsForCheckout(),
     })
   }
