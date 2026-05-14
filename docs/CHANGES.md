@@ -65,6 +65,7 @@ Notas:
 | 7.2 | admin-user-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-user-management/` |
 | 7.3 | admin-product-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-product-management/` |
 | 7.4 | admin-order-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-order-management/` |
+| 7.5 | admin-settings-and-configuration | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-settings-and-configuration/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -127,7 +128,7 @@ Notas:
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
 | 7.1 | admin-dashboard-metrics | US-052, US-053 | KPIs + gráficos (recharts) | 5.5, 6.3, 1.5 |
-| 7.5 | admin-settings-and-configuration | US-064 | Formas de pago habilitadas + parámetros sistema + ver soft-deleted | 1.5 |
+
 
 ---
 

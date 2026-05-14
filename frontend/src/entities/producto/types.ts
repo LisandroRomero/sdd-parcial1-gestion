@@ -42,6 +42,7 @@ export interface ProductoRead {
   imagen_url: string | null
   created_at: string | null
   updated_at: string | null
+  deleted_at?: string | null
 }
 
 export interface ProductoDetalleRead extends ProductoRead {

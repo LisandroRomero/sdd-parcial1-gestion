@@ -43,3 +43,20 @@ class UsuarioAdminListRead(BaseModel):
     page: int
     size: int
     pages: int
+
+
+class FormaPagoRead(BaseModel):
+    """Forma de pago as seen by an admin."""
+
+    codigo: str
+    descripcion: Optional[str] = None
+    activo: bool
+    created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FormaPagoUpdate(BaseModel):
+    """Toggle a payment method's active state."""
+
+    activo: bool

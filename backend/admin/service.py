@@ -3,8 +3,12 @@ from __future__ import annotations
 from math import ceil
 from typing import Optional
 
+from sqlmodel import select
+
 from backend.admin.schemas import (
     EstadoUsuarioUpdate,
+    FormaPagoRead,
+    FormaPagoUpdate,
     UsuarioAdminListRead,
     UsuarioAdminRead,
     UsuarioAdminUpdate,
@@ -181,3 +185,37 @@ def toggle_estado(
 
     uow.session.refresh(usuario)
     return _to_read(usuario)
+
+
+# ---------------------------------------------------------------------------
+# Configuración — Formas de pago
+# ---------------------------------------------------------------------------
+
+
+def list_formas_pago(uow: UnitOfWork) -> list[FormaPagoRead]:
+    """Return all payment methods ordered by code."""
+    from backend.pagos.model import FormaPago
+
+    stmt = select(FormaPago).order_by(FormaPago.codigo)
+    formas = list(uow.session.exec(stmt).all())
+    return [FormaPagoRead.model_validate(f) for f in formas]
+
+
+def toggle_forma_pago(
+    uow: UnitOfWork,
+    codigo: str,
+    body: FormaPagoUpdate,
+) -> FormaPagoRead:
+    """Activate or deactivate a payment method."""
+    from backend.pagos.model import FormaPago
+
+    stmt = select(FormaPago).where(FormaPago.codigo == codigo)
+    forma = uow.session.exec(stmt).first()
+    if forma is None:
+        raise NotFoundException(detail=f"Forma de pago '{codigo}' no encontrada")
+
+    forma.activo = body.activo
+    uow.session.add(forma)
+    uow.session.flush()
+    uow.session.refresh(forma)
+    return FormaPagoRead.model_validate(forma)

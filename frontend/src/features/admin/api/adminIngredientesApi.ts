@@ -9,9 +9,10 @@ import type {
 export const listarIngredientesAdmin = (
   page = 1,
   size = 100,
+  include_deleted?: boolean,
 ): Promise<IngredientePaginado> =>
   api
-    .get<IngredientePaginado>('/ingredientes', { params: { page, size } })
+    .get<IngredientePaginado>('/ingredientes', { params: { page, size, include_deleted } })
     .then((r) => r.data)
 
 export const crearIngrediente = (

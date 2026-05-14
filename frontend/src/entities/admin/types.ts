@@ -64,6 +64,7 @@ export interface IngredienteAdminRead {
   nombre: string
   es_alergeno: boolean
   created_at?: string | null
+  deleted_at?: string | null
 }
 
 export interface IngredienteCreate {
@@ -79,4 +80,15 @@ export interface IngredienteUpdate {
 export interface IngredientePaginado {
   items: IngredienteAdminRead[]
   total: number
+}
+
+export interface FormaPagoRead {
+  codigo: string
+  descripcion: string | null
+  activo: boolean
+  created_at?: string | null
+}
+
+export interface FormaPagoUpdate {
+  activo: boolean
 }

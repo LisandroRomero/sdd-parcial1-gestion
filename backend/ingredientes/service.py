@@ -22,6 +22,7 @@ def listar(
     es_alergeno: bool | None,
     page: int,
     size: int,
+    include_deleted: bool = False,
 ) -> IngredientePaginado:
     """Return a paginated list of active ingredientes.
 
@@ -32,13 +33,19 @@ def listar(
         es_alergeno: If provided, filter by allergen flag.
         page: 1-based page number.
         size: Number of records per page.
+        include_deleted: If True, include soft-deleted items.
 
     Returns:
         IngredientePaginado with items, total, page, size, and pages.
     """
     repo = uow.repos.ingredientes
     skip = (page - 1) * size
-    items, total = repo.list_active(es_alergeno=es_alergeno, skip=skip, limit=size)
+    items, total = repo.list_active(
+        es_alergeno=es_alergeno,
+        skip=skip,
+        limit=size,
+        include_deleted=include_deleted,
+    )
     read_items = [IngredienteRead.model_validate(i) for i in items]
     return IngredientePaginado.build(items=read_items, total=total, page=page, size=size)
 

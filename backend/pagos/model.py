@@ -8,6 +8,7 @@ from typing import Optional
 class FormaPago(SQLModel, table=True):
     codigo: str = Field(max_length=20, primary_key=True)
     descripcion: Optional[str] = Field(default=None)
+    activo: bool = Field(default=True)
     created_at: Optional[datetime] = Field(
         default=None,
         sa_type=DateTime(timezone=True),

@@ -21,6 +21,7 @@ class IngredienteRepository(BaseRepository[Ingrediente]):
         es_alergeno: Optional[bool],
         skip: int,
         limit: int,
+        include_deleted: bool = False,
     ) -> tuple[list[Ingrediente], int]:
         """Return a paginated list of active (non-deleted) ingredientes.
 
@@ -30,11 +31,14 @@ class IngredienteRepository(BaseRepository[Ingrediente]):
             es_alergeno: If provided, filter by this boolean value.
             skip: Number of records to skip (offset).
             limit: Maximum number of records to return.
+            include_deleted: If True, include soft-deleted items.
 
         Returns:
             A tuple of (items, total) where total is the count before pagination.
         """
-        stmt = select(Ingrediente).where(Ingrediente.deleted_at.is_(None))
+        stmt = select(Ingrediente)
+        if not include_deleted:
+            stmt = stmt.where(Ingrediente.deleted_at.is_(None))
         if es_alergeno is not None:
             stmt = stmt.where(Ingrediente.es_alergeno == es_alergeno)
 

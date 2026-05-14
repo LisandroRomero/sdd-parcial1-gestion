@@ -10,6 +10,8 @@ from backend.admin import service as admin_service
 from backend.admin.repository import AdminRepository
 from backend.admin.schemas import (
     EstadoUsuarioUpdate,
+    FormaPagoRead,
+    FormaPagoUpdate,
     UsuarioAdminListRead,
     UsuarioAdminRead,
     UsuarioAdminUpdate,
@@ -119,5 +121,40 @@ def toggle_estado_usuario(
     Deactivating immediately revokes all active refresh tokens.
     """
     result = admin_service.toggle_estado(uow, usuario_id, body)
+    uow.commit()
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Configuración — Formas de pago
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/configuracion/formas-de-pago",
+    response_model=list[FormaPagoRead],
+    summary="List payment methods (admin)",
+)
+def listar_formas_pago(
+    uow: UnitOfWork = Depends(_get_uow),
+    _: object = Depends(require_role("ADMIN")),
+) -> list[FormaPagoRead]:
+    """Return all payment methods with their active/inactive state."""
+    return admin_service.list_formas_pago(uow)
+
+
+@router.patch(
+    "/configuracion/formas-de-pago/{codigo}",
+    response_model=FormaPagoRead,
+    summary="Toggle payment method state (admin)",
+)
+def toggle_forma_pago(
+    codigo: str,
+    body: FormaPagoUpdate,
+    uow: UnitOfWork = Depends(_get_uow),
+    _: object = Depends(require_role("ADMIN")),
+) -> FormaPagoRead:
+    """Enable or disable a payment method."""
+    result = admin_service.toggle_forma_pago(uow, codigo, body)
     uow.commit()
     return result

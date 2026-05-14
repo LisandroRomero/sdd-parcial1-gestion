@@ -52,6 +52,32 @@ def get_current_user(
     return usuario
 
 
+def get_current_user_optional(
+    authorization: str | None = Header(default=None),
+    session: Session = Depends(get_session),
+) -> Usuario | None:
+    """FastAPI dependency that returns the authenticated user or None.
+
+    Unlike ``get_current_user``, this does NOT raise an exception if
+    no token is provided. Returns ``None`` when unauthenticated.
+    """
+    if authorization is None:
+        return None
+
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        return None
+
+    try:
+        payload = verify_token(token)
+        user_id_str = payload.get("sub")
+        if user_id_str is None:
+            return None
+        return session.get(Usuario, int(user_id_str))
+    except Exception:
+        return None
+
+
 # ------------------------------------------------------------------
 # Authorization (RBAC)
 # ------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useListarIngredientesAdmin } from '@/features/admin/hooks/useListarIngredientesAdmin'
+import { useQuery } from '@tanstack/react-query'
 import { useCrearIngrediente } from '@/features/admin/hooks/useCrearIngrediente'
+import { listarIngredientesAdmin } from '@/features/admin/api/adminIngredientesApi'
 import { useActualizarIngrediente } from '@/features/admin/hooks/useActualizarIngrediente'
 import { useEliminarIngrediente } from '@/features/admin/hooks/useEliminarIngrediente'
 import type { IngredienteAdminRead, IngredienteCreate, IngredienteUpdate } from '@/entities/admin/types'
@@ -115,8 +116,12 @@ export function AdminIngredientesPage() {
   const [editingIngrediente, setEditingIngrediente] = useState<IngredienteAdminRead | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
+  const [includeDeleted, setIncludeDeleted] = useState(false)
 
-  const { data, isLoading, isError, error, refetch } = useListarIngredientesAdmin()
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['admin-ingredientes', includeDeleted],
+    queryFn: () => listarIngredientesAdmin(1, 100, includeDeleted),
+  })
   const crearIngrediente = useCrearIngrediente()
   const actualizarIngrediente = useActualizarIngrediente()
   const eliminarIngrediente = useEliminarIngrediente()
@@ -188,6 +193,18 @@ export function AdminIngredientesPage() {
         </Button>
       </div>
 
+      <div className="mb-4">
+        <label className="inline-flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeDeleted}
+            onChange={(e) => setIncludeDeleted(e.target.checked)}
+            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+          />
+          <span className="text-sm text-gray-700 font-medium">Mostrar eliminados</span>
+        </label>
+      </div>
+
       {ingredientes.length === 0 ? (
         <EmptyState
           title="No hay ingredientes"
@@ -215,7 +232,16 @@ export function AdminIngredientesPage() {
             <tbody className="divide-y divide-gray-100">
               {ingredientes.map((ing) => (
                 <tr key={ing.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{ing.nombre}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900">{ing.nombre}</span>
+                      {ing.deleted_at && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                          Eliminado
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">
                     <AlergenoBadge esAlergeno={ing.es_alergeno} />
                   </td>

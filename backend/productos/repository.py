@@ -72,13 +72,15 @@ class ProductoRepository(BaseRepository[Producto]):
         )
         return list(self.session.exec(stmt).all())
 
-    def list_public(self, filtros: ProductoFiltros) -> tuple[list[Producto], int]:
+    def list_public(self, filtros: ProductoFiltros, include_deleted: bool = False) -> tuple[list[Producto], int]:
         """Return paginated public products filtered by ProductoFiltros.
 
-        Base filter: deleted_at IS NULL and disponible = True (unless filtros.disponible is set).
+        Base filter: deleted_at IS NULL (unless include_deleted=True) and disponible = True (unless filtros.disponible is set).
         Returns (paginated_items, total_count).
         """
-        stmt = select(Producto).where(Producto.deleted_at.is_(None))
+        stmt = select(Producto)
+        if not include_deleted:
+            stmt = stmt.where(Producto.deleted_at.is_(None))
 
         # Apply disponible filter — default to True when not specified
         if filtros.disponible is None:

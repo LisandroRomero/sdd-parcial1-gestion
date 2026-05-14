@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from typing import Optional
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlmodel import Session
 
 from backend.core.database import engine
-from backend.core.dependencies import require_role
+from backend.core.dependencies import get_current_user_optional, require_role
 from backend.core.exceptions import AppException
 from backend.core.uow import UnitOfWork
 from backend.ingredientes import service as ingrediente_service
@@ -74,9 +75,17 @@ def _get_uow() -> Generator[UnitOfWork, None, None]:
 )
 def listar_productos_publico(
     filtros: ProductoFiltros = Depends(),
+    include_deleted: bool = Query(default=False),
     uow: UnitOfWork = Depends(_get_uow),
+    current_user: Optional[Usuario] = Depends(get_current_user_optional),
 ) -> ProductoPaginado:
-    return producto_service.listar_publico(uow, filtros)
+    effective_include = include_deleted
+    if effective_include:
+        user_roles = {ur.rol_codigo for ur in current_user.roles} if current_user else set()
+        if not user_roles.intersection({"ADMIN", "STOCK"}):
+            effective_include = False
+
+    return producto_service.listar_publico(uow, filtros, include_deleted=effective_include)
 
 
 @router.get(

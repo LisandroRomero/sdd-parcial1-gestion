@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useProductos } from '@/features/catalogo/hooks/useProductos'
+import { useQuery } from '@tanstack/react-query'
 import { useCrearProducto } from '@/features/admin/hooks/useCrearProducto'
+import { listarProductosAdmin } from '@/features/admin/api/adminProductosApi'
 import { useActualizarProducto } from '@/features/admin/hooks/useActualizarProducto'
 import { useEliminarProducto } from '@/features/admin/hooks/useEliminarProducto'
 import { useActualizarStock } from '@/features/admin/hooks/useActualizarStock'
@@ -287,8 +288,12 @@ export function AdminProductosPage() {
   const [stockProducto, setStockProducto] = useState<ProductoRead | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
+  const [includeDeleted, setIncludeDeleted] = useState(false)
 
-  const { data, isLoading, isError, error, refetch } = useProductos({})
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['admin-productos', includeDeleted],
+    queryFn: () => listarProductosAdmin({ include_deleted: includeDeleted }),
+  })
   const categoriasQuery = useListarCategoriasAdmin()
 
   const crearProducto = useCrearProducto()
@@ -373,6 +378,18 @@ export function AdminProductosPage() {
         </Button>
       </div>
 
+      <div className="mb-4">
+        <label className="inline-flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeDeleted}
+            onChange={(e) => setIncludeDeleted(e.target.checked)}
+            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+          />
+          <span className="text-sm text-gray-700 font-medium">Mostrar eliminados</span>
+        </label>
+      </div>
+
       {productos.length === 0 ? (
         <EmptyState
           title="No hay productos"
@@ -407,7 +424,14 @@ export function AdminProductosPage() {
               {productos.map((p) => (
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-gray-900">{p.nombre}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900">{p.nombre}</span>
+                      {p.deleted_at && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                          Eliminado
+                        </span>
+                      )}
+                    </div>
                     {p.descripcion && (
                       <p className="text-xs text-gray-500 truncate max-w-xs">{p.descripcion}</p>
                     )}

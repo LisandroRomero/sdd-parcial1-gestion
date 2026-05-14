@@ -18,6 +18,7 @@ const AdminUsuariosPage = lazy(() => import('../pages/admin/AdminUsuariosPage').
 const AdminProductosPage = lazy(() => import('../pages/admin/AdminProductosPage').then(m => ({ default: m.AdminProductosPage })))
 const AdminCategoriasPage = lazy(() => import('../pages/admin/AdminCategoriasPage').then(m => ({ default: m.AdminCategoriasPage })))
 const AdminIngredientesPage = lazy(() => import('../pages/admin/AdminIngredientesPage').then(m => ({ default: m.AdminIngredientesPage })))
+const AdminConfiguracionPage = lazy(() => import('../pages/admin/AdminConfiguracionPage').then(m => ({ default: m.AdminConfiguracionPage })))
 
 export const router = createBrowserRouter([
   // Public-only routes (redirect to / if already authenticated)
@@ -65,6 +66,7 @@ export const router = createBrowserRouter([
           { path: 'productos', element: <AdminProductosPage /> },
           { path: 'categorias', element: <AdminCategoriasPage /> },
           { path: 'ingredientes', element: <AdminIngredientesPage /> },
+          { path: 'configuracion', element: <AdminConfiguracionPage /> },
           { path: 'pedidos', element: <PedidoListPage /> },
         ],
       },

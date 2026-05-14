@@ -162,10 +162,14 @@ def actualizar_stock(uow: UnitOfWork, id: int, stock_cantidad: int) -> Producto:
     return repo.update(producto)
 
 
-def listar_publico(uow: UnitOfWork, filtros: ProductoFiltros) -> ProductoPaginado:
+def listar_publico(
+    uow: UnitOfWork,
+    filtros: ProductoFiltros,
+    include_deleted: bool = False,
+) -> ProductoPaginado:
     """Return a paginated public product list filtered by ProductoFiltros."""
     repo = uow.repos.productos
-    items, total = repo.list_public(filtros)
+    items, total = repo.list_public(filtros, include_deleted=include_deleted)
     pages = math.ceil(total / filtros.size) if filtros.size > 0 else 0
     return ProductoPaginado(
         items=[ProductoRead.model_validate(p) for p in items],

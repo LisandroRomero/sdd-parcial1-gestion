@@ -3,14 +3,14 @@ from __future__ import annotations
 from collections.abc import Generator
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlmodel import Session
 
 from backend.ingredientes import service as ingrediente_service
 from backend.ingredientes.repository import IngredienteRepository
 from backend.ingredientes.schemas import IngredienteCreate, IngredientePaginado, IngredienteRead, IngredienteUpdate
 from backend.core.database import engine
-from backend.core.dependencies import get_current_user, require_role
+from backend.core.dependencies import get_current_user, get_current_user_optional, require_role
 from backend.core.exceptions import AppException
 from backend.core.uow import UnitOfWork
 from backend.usuarios.model import Usuario
@@ -60,14 +60,31 @@ def listar_ingredientes(
     es_alergeno: Optional[bool] = None,
     page: int = 1,
     size: int = 20,
+    include_deleted: bool = Query(default=False),
     uow: UnitOfWork = Depends(_get_uow),
+    current_user: Optional[Usuario] = Depends(get_current_user_optional),
 ) -> IngredientePaginado:
-    """Return a paginated list of active ingredientes (public endpoint).
+    """Return a paginated list of ingredientes.
 
     Optionally filter by ``es_alergeno``. Returns an empty items list when
     no ingredientes exist.
+
+    ADMIN/STOCK roles can set ``include_deleted=true`` to include soft-deleted items.
+    For other roles or unauthenticated requests, ``include_deleted`` is forced to False.
     """
-    return ingrediente_service.listar(uow, es_alergeno=es_alergeno, page=page, size=size)
+    effective_include = include_deleted
+    if effective_include:
+        user_roles = {ur.rol_codigo for ur in current_user.roles} if current_user else set()
+        if not user_roles.intersection({"ADMIN", "STOCK"}):
+            effective_include = False
+
+    return ingrediente_service.listar(
+        uow,
+        es_alergeno=es_alergeno,
+        page=page,
+        size=size,
+        include_deleted=effective_include,
+    )
 
 
 @router.post(

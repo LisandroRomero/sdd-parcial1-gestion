@@ -3,6 +3,7 @@ import type {
   ProductoCreate,
   ProductoUpdate,
   ProductoRead,
+  ProductoPaginado,
   StockUpdate,
   DisponibilidadUpdate,
 } from '@/entities/producto/types'
@@ -33,4 +34,13 @@ export const cambiarDisponibilidad = (
 ): Promise<ProductoRead> =>
   api
     .patch<ProductoRead>(`/productos/${id}/disponibilidad`, body)
+    .then((r) => r.data)
+
+export const listarProductosAdmin = (
+  params: { include_deleted?: boolean; page?: number; size?: number } = {},
+): Promise<ProductoPaginado> =>
+  api
+    .get<ProductoPaginado>('/productos/', {
+      params: { page: params.page ?? 1, size: params.size ?? 100, include_deleted: params.include_deleted ?? false },
+    })
     .then((r) => r.data)

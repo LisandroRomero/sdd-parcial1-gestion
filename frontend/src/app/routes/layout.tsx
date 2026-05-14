@@ -109,6 +109,17 @@ export function Layout() {
                   >
                     Ingredientes
                   </NavLink>
+                  <NavLink
+                    to="/admin/configuracion"
+                    end={false}
+                    className={({ isActive }) =>
+                      isActive
+                        ? 'text-orange-500 font-semibold text-sm'
+                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
+                    }
+                  >
+                    Configuración
+                  </NavLink>
                 </>
               )}
             </nav>
