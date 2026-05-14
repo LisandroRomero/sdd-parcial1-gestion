@@ -16,7 +16,7 @@ export interface ProductoPaginado {
   pages: number
 }
 
-export interface ProductoIngredienteRead {
+export interface ProductoIngredienteRead {        
   ingrediente_id: number
   nombre: string
   es_alergeno: boolean
