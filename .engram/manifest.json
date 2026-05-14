@@ -264,6 +264,14 @@
       "sessions": 1,
       "memories": 3,
       "prompts": 4
+    },
+    {
+      "id": "6b0126f2",
+      "created_by": "sebad",
+      "created_at": "2026-05-14T06:35:06Z",
+      "sessions": 0,
+      "memories": 12,
+      "prompts": 0
     }
   ]
 }

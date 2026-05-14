@@ -4,6 +4,19 @@ from decimal import Decimal
 from typing import Optional
 
 
+class DireccionSnapshot(BaseModel):
+    id: int
+    calle: str
+    numero: str
+    piso: Optional[str] = None
+    departamento: Optional[str] = None
+    ciudad: str
+    provincia: str
+    codigo_postal: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class DetallePedidoCreate(BaseModel):
     producto_id: int
     cantidad: int = 1
@@ -51,6 +64,7 @@ class PedidoRead(BaseModel):
     total: Decimal
     costo_envio: Decimal
     created_at: Optional[datetime] = None
+    cantidad_items: int = 0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -72,6 +86,7 @@ class PedidoDetail(PedidoRead):
     detalles: list[DetallePedidoRead] = []
     historial_estados: list["HistorialEstadoRead"] = []
     pago: Optional[PagoResumen] = None
+    direccion: Optional[DireccionSnapshot] = None
 
 
 class AvanzarEstadoRequest(BaseModel):

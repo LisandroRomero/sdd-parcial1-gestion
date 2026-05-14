@@ -11,4 +11,4 @@ export type {
   AvanzarEstadoRequest,
   HistorialEstadoRead,
 } from './types'
-export { statusColors, statusLabels } from './constants'
+export { statusColors, statusLabels, getNextState } from './constants'

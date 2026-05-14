@@ -49,3 +49,33 @@ export interface ProductoDetalleRead extends ProductoRead {
   ingredientes: ProductoIngredienteRead[]
   tiene_alergenos: boolean
 }
+
+export interface ProductoCreate {
+  codigo_sku: string
+  nombre: string
+  descripcion?: string
+  precio_base: string
+  stock_cantidad: number
+  disponible: boolean
+  imagen_url?: string
+  categoria_ids: number[]
+}
+
+export interface ProductoUpdate {
+  codigo_sku?: string
+  nombre?: string
+  descripcion?: string
+  precio_base?: string
+  stock_cantidad?: number
+  disponible?: boolean
+  imagen_url?: string
+  categoria_ids?: number[]
+}
+
+export interface StockUpdate {
+  stock_cantidad: number
+}
+
+export interface DisponibilidadUpdate {
+  disponible: boolean
+}

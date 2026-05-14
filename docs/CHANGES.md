@@ -61,6 +61,10 @@ Notas:
 | — | fix-lazy-routing-suspense | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-fix-lazy-routing-suspense/` |
 | 5.4 | order-history-audit-trail | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-order-history-audit-trail/` |
 | 5.5 | order-list-and-detail | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-order-list-and-detail/` |
+| 5.6 | frontend-order-history | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-order-history/` |
+| 7.2 | admin-user-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-user-management/` |
+| 7.3 | admin-product-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-product-management/` |
+| 7.4 | admin-order-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-order-management/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -104,7 +108,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 5.6 | frontend-order-history | US-049..US-051, US-044 | Página "Mis Pedidos": listado con estado + detalle de pedido con líneas, timeline de historial de estados | 5.5, 1.7 |
 
 ---
 
@@ -124,9 +127,6 @@ Notas:
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
 | 7.1 | admin-dashboard-metrics | US-052, US-053 | KPIs + gráficos (recharts) | 5.5, 6.3, 1.5 |
-| 7.2 | admin-user-management | US-054..US-060 | CRUD usuarios + roles + desactivar + soft delete | 1.5, 0.4 |
-| 7.3 | admin-product-management | US-015, US-020..US-022 (panel) | CRUD productos/stock/categorías/ingredientes desde panel | 2.1, 2.2, 2.3, 2.4, 1.5 |
-| 7.4 | admin-order-management | US-041..US-043 | Ver pedidos + avanzar estados + historial + cancelar + filtros | 5.5, 5.3, 5.4, 1.5 |
 | 7.5 | admin-settings-and-configuration | US-064 | Formas de pago habilitadas + parámetros sistema + ver soft-deleted | 1.5 |
 
 ---

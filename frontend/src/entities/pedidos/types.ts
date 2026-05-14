@@ -10,6 +10,17 @@ export interface PedidoCreate {
   detalles: DetallePedidoCreate[]
 }
 
+export interface DireccionSnapshot {
+  id: number
+  calle: string
+  numero: string
+  piso?: string
+  departamento?: string
+  ciudad: string
+  provincia: string
+  codigo_postal?: string
+}
+
 /** Compact order schema for listings — no details, history, or payment data. */
 export interface PedidoRead {
   id: number
@@ -18,6 +29,7 @@ export interface PedidoRead {
   total: string
   costo_envio: string
   created_at: string
+  cantidad_items: number
 }
 
 export interface PagoResumen {
@@ -32,6 +44,7 @@ export interface PedidoDetail extends PedidoRead {
   detalles: DetallePedidoRead[]
   historial_estados: HistorialEstadoRead[]
   pago: PagoResumen | null
+  direccion?: DireccionSnapshot | null
 }
 
 export interface DetallePedidoRead {
@@ -74,4 +87,5 @@ export interface ListarPedidosParams {
   fecha_hasta?: string
   page?: number
   size?: number
+  buscar?: string
 }

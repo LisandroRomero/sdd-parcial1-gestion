@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from backend.auth.schemas import LoginRequest, LogoutRequest, RefreshRequest, RegisterRequest, TokenResponse
 from backend.core.config import get_settings
-from backend.core.exceptions import BadRequestException, ConflictException, UnauthorizedException
+from backend.core.exceptions import BadRequestException, ConflictException, ForbiddenException, UnauthorizedException
 from backend.core.security import (
     create_access_token,
     create_refresh_token,
@@ -47,17 +47,22 @@ def login(uow: UnitOfWork, body: LoginRequest) -> TokenResponse:
     if usuario is None or not verify_password(body.password, usuario.password_hash):
         raise UnauthorizedException(detail="Credenciales inválidas")
 
-    # 3. Resolve primary role
+    # 3. Check account is active — return 403 so the client can distinguish
+    #    "wrong credentials" (401) from "account disabled" (403)
+    if not usuario.activo:
+        raise ForbiddenException(detail="Cuenta desactivada")
+
+    # 4. Resolve primary role (first assigned role, fallback to CLIENT)
     rol = usuario.roles[0].rol_codigo if usuario.roles else "CLIENT"
 
-    # 4. Generate tokens
+    # 5. Generate tokens
     access_token = create_access_token(str(usuario.id), data={"role": rol})
     refresh_token = create_refresh_token(str(usuario.id))
 
-    # 5. Hash refresh token for secure storage (never store the raw JWT)
+    # 6. Hash refresh token for secure storage (never store the raw JWT)
     token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
 
-    # 6. Persist hashed refresh token
+    # 7. Persist hashed refresh token
     expires_at = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
     uow.repos.refresh_tokens.create(
         usuario_id=usuario.id,
@@ -65,7 +70,7 @@ def login(uow: UnitOfWork, body: LoginRequest) -> TokenResponse:
         expires_at=expires_at,
     )
 
-    # 7. Return token response
+    # 8. Return token response
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,

@@ -62,6 +62,55 @@ export function Layout() {
               >
                 Mi Perfil
               </NavLink>
+              {user?.roles.includes('ADMIN') && (
+                <>
+                  <span className="text-gray-300 text-sm">|</span>
+                  <NavLink
+                    to="/admin/usuarios"
+                    end={false}
+                    className={({ isActive }) =>
+                      isActive
+                        ? 'text-orange-500 font-semibold text-sm'
+                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
+                    }
+                  >
+                    Usuarios
+                  </NavLink>
+                  <NavLink
+                    to="/admin/productos"
+                    end={false}
+                    className={({ isActive }) =>
+                      isActive
+                        ? 'text-orange-500 font-semibold text-sm'
+                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
+                    }
+                  >
+                    Productos
+                  </NavLink>
+                  <NavLink
+                    to="/admin/categorias"
+                    end={false}
+                    className={({ isActive }) =>
+                      isActive
+                        ? 'text-orange-500 font-semibold text-sm'
+                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
+                    }
+                  >
+                    Categorías
+                  </NavLink>
+                  <NavLink
+                    to="/admin/ingredientes"
+                    end={false}
+                    className={({ isActive }) =>
+                      isActive
+                        ? 'text-orange-500 font-semibold text-sm'
+                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
+                    }
+                  >
+                    Ingredientes
+                  </NavLink>
+                </>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-4">

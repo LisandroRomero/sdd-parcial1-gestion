@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import Optional
 
+from sqlalchemy import String, cast, or_
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, func, select
 
 from backend.core.patterns import BaseRepository
 from backend.pedidos.model import DetallePedido, HistorialEstadoPedido, Pedido
+from backend.usuarios.model import Usuario
 
 
 class PedidoRepository(BaseRepository[Pedido]):
@@ -37,6 +40,7 @@ class PedidoRepository(BaseRepository[Pedido]):
         fecha_hasta: Optional[str] = None,
         limit: int = 20,
         offset: int = 0,
+        buscar: Optional[str] = None,
     ) -> tuple[list[Pedido], int]:
         """List pedidos with optional filters. Returns (items, total_count)."""
         query = select(Pedido)
@@ -58,9 +62,24 @@ class PedidoRepository(BaseRepository[Pedido]):
             query = query.where(Pedido.created_at <= fecha_hasta + " 23:59:59")
             count_query = count_query.where(Pedido.created_at <= fecha_hasta + " 23:59:59")
 
+        if buscar is not None:
+            pattern = f"%{buscar}%"
+            id_match = cast(Pedido.id, String).ilike(pattern)
+            nombre_match = Usuario.nombre.ilike(pattern)
+            apellido_match = Usuario.apellido.ilike(pattern)
+            buscar_filter = or_(id_match, nombre_match, apellido_match)
+            query = query.join(Usuario, Pedido.usuario_id == Usuario.id).where(buscar_filter)
+            count_query = count_query.join(Usuario, Pedido.usuario_id == Usuario.id).where(buscar_filter)
+
         total = self.session.exec(count_query).one()
 
-        query = query.order_by(Pedido.created_at.desc()).offset(offset).limit(limit)
+        query = (
+            query
+            .options(selectinload(Pedido.detalles))
+            .order_by(Pedido.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
         items = list(self.session.exec(query).all())
 
         return items, total

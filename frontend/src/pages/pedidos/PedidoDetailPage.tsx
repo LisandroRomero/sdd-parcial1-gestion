@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getPedido } from '@/entities/pedidos'
-import { statusColors, statusLabels } from '@/entities/pedidos/constants'
+import { statusColors, statusLabels, getNextState } from '@/entities/pedidos/constants'
 import { OrderTimeline } from '@/entities/pedidos/ui/OrderTimeline'
 import { canCancel, useCancelarPedido, CancelarPedidoModal } from '@/features/pedidos'
+import { useAvanzarEstado } from '@/features/pedidos/hooks/useAvanzarEstado'
 import { useAuthStore } from '@/shared/lib/stores/auth.store'
 import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
 import { Button, Card, CardHeader, CardContent } from '@/shared/components'
@@ -43,6 +44,7 @@ export function PedidoDetailPage() {
 
   const { data: pedido, isLoading, isError, error, refetch } = usePedido(numericId)
   const cancelMutation = useCancelarPedido()
+  const avanzarMutation = useAvanzarEstado(numericId)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
 
@@ -95,6 +97,7 @@ export function PedidoDetailPage() {
   }
 
   const showCancelButton = canCancel(pedido.estado_actual, roles)
+  const nextState = getNextState(pedido.estado_actual, roles)
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
@@ -170,6 +173,27 @@ export function PedidoDetailPage() {
         </Card>
       )}
 
+      {pedido.direccion && (
+        <Card className="mb-6">
+          <CardHeader>
+            <h2 className="text-lg font-semibold text-gray-900">Dirección de entrega</h2>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <p className="font-medium text-gray-900">
+              {pedido.direccion.calle} {pedido.direccion.numero}
+            </p>
+            {(pedido.direccion.piso || pedido.direccion.departamento) && (
+              <p className="text-sm text-gray-600">
+                {[pedido.direccion.piso && `Piso ${pedido.direccion.piso}`, pedido.direccion.departamento && `Dpto. ${pedido.direccion.departamento}`].filter(Boolean).join(', ')}
+              </p>
+            )}
+            <p className="text-sm text-gray-600">
+              {pedido.direccion.ciudad}, {pedido.direccion.provincia}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="mb-6">
         <CardHeader>
           <h2 className="text-lg font-semibold text-gray-900">Productos</h2>
@@ -200,16 +224,34 @@ export function PedidoDetailPage() {
         </CardContent>
       </Card>
 
-      {showCancelButton && (
-        <div className="flex justify-end">
-          <Button
-            variant="primary"
-            className="bg-red-600 text-white hover:bg-red-700"
-            onClick={() => setIsModalOpen(true)}
-            disabled={isCancelling}
-          >
-            {isCancelling ? 'Cancelando...' : 'Cancelar pedido'}
-          </Button>
+      {(nextState || showCancelButton) && (
+        <div className="flex flex-col gap-2 items-end">
+          {nextState && (
+            <div>
+              <Button
+                variant="primary"
+                onClick={() => avanzarMutation.mutate({ nuevo_estado: nextState })}
+                disabled={avanzarMutation.isPending}
+              >
+                {avanzarMutation.isPending ? 'Avanzando...' : `Avanzar a ${statusLabels[nextState] ?? nextState}`}
+              </Button>
+              {avanzarMutation.isError && (
+                <p className="text-sm text-red-600 mt-1">
+                  {(avanzarMutation.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ?? 'Error al avanzar el estado'}
+                </p>
+              )}
+            </div>
+          )}
+          {showCancelButton && (
+            <Button
+              variant="primary"
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={() => setIsModalOpen(true)}
+              disabled={isCancelling}
+            >
+              {isCancelling ? 'Cancelando...' : 'Cancelar pedido'}
+            </Button>
+          )}
         </div>
       )}
 

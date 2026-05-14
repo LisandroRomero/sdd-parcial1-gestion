@@ -6,11 +6,13 @@ import { OrderFilters } from '@/features/pedidos/components/OrderFilters'
 import { OrderPagination } from '@/features/pedidos/components/OrderPagination'
 import { ErrorMessage, EmptyState } from '@/shared/ui'
 import { Button } from '@/shared/components'
+import { useAuthStore } from '@/shared/lib/stores/auth.store'
 
 interface Filters {
   estado?: string
   fecha_desde?: string
   fecha_hasta?: string
+  buscar?: string
 }
 
 export function PedidoListPage() {
@@ -18,6 +20,7 @@ export function PedidoListPage() {
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState<Filters>({})
   const size = 20
+  const user = useAuthStore((s) => s.user)
 
   const { data, isLoading, isError, error, refetch } = useListarPedidos({
     params: { ...filters, page, size },
@@ -28,11 +31,13 @@ export function PedidoListPage() {
     setPage(1)
   }
 
+  const pageTitle = user?.roles?.includes('CLIENT') ? 'Mis Pedidos' : 'Pedidos'
+
   // --- Loading state ---
   if (isLoading && !data) {
     return (
       <div className="max-w-3xl mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Pedidos</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{pageTitle}</h1>
         <div className="space-y-4">
           {Array.from({ length: 4 }, (_, i) => (
             <OrderCardSkeleton key={i} />
@@ -46,7 +51,7 @@ export function PedidoListPage() {
   if (isError && !data) {
     return (
       <div className="max-w-3xl mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Pedidos</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{pageTitle}</h1>
         <ErrorMessage
           message={error instanceof Error ? error.message : 'Error al cargar los pedidos'}
           onRetry={refetch}
@@ -61,7 +66,7 @@ export function PedidoListPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Pedidos</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{pageTitle}</h1>
 
       {/* Filters */}
       <div className="mb-6">

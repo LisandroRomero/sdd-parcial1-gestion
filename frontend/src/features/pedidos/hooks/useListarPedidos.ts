@@ -7,10 +7,10 @@ interface UseListarPedidosOptions {
 }
 
 export function useListarPedidos({ params = {} }: UseListarPedidosOptions = {}) {
-  const { page = 1, size = 20, estado, fecha_desde, fecha_hasta } = params
+  const { page = 1, size = 20, estado, fecha_desde, fecha_hasta, buscar } = params
 
   return useQuery({
-    queryKey: ['pedidos', { page, size, estado, fecha_desde, fecha_hasta }],
+    queryKey: ['pedidos', { page, size, estado, fecha_desde, fecha_hasta, buscar }],
     queryFn: () =>
       listarPedidos({
         page,
@@ -18,6 +18,7 @@ export function useListarPedidos({ params = {} }: UseListarPedidosOptions = {}) 
         estado: estado || undefined,
         fecha_desde: fecha_desde || undefined,
         fecha_hasta: fecha_hasta || undefined,
+        buscar: buscar || undefined,
       }),
     placeholderData: keepPreviousData,
   })

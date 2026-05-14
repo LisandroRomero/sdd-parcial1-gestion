@@ -17,6 +17,7 @@ def health() -> dict[str, str]:
 # Import each router as it is implemented.
 #
 
+from backend.admin.router import router as admin_router
 from backend.auth.router import router as auth_router
 from backend.categorias.router import router as categorias_router
 from backend.direcciones.router import router as direcciones_router
@@ -33,6 +34,7 @@ sub_routers = [
     (productos_router, "/productos", "productos"),
     (direcciones_router, "/usuarios/me/direcciones", "direcciones"),
     (pedidos_router, "/pedidos", "pedidos"),
+    (admin_router, "/admin", "admin"),
 ]
 for sub_router, prefix, tag in sub_routers:
     router.include_router(sub_router, prefix=prefix, tags=[tag])

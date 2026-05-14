@@ -41,6 +41,10 @@ export function OrderCard({ pedido }: OrderCardProps) {
         <span>{formatDate(pedido.created_at)}</span>
         <span className="text-gray-300">|</span>
         <span>
+          {pedido.cantidad_items === 1 ? '1 ítem' : `${pedido.cantidad_items} ítems`}
+        </span>
+        <span className="text-gray-300">|</span>
+        <span>
           Envío: {formatARS(pedido.costo_envio)}
         </span>
       </div>

@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { Layout } from './routes/layout'
 import { LoadingSpinner } from '../shared/ui/LoadingSpinner'
-import { ProtectedRoute } from '@/features/auth'
+import { ProtectedRoute, AdminRoute } from '@/features/auth'
 import { PublicOnlyRoute } from '@/features/auth'
 
 const HomePage = lazy(() => import('./routes/home').then(m => ({ default: m.HomePage })))
@@ -14,6 +14,10 @@ const PerfilPage = lazy(() => import('../pages/perfil').then(m => ({ default: m.
 const CheckoutPage = lazy(() => import('../pages/checkout').then(m => ({ default: m.CheckoutPage })))
 const PedidoDetailPage = lazy(() => import('../pages/pedidos').then(m => ({ default: m.PedidoDetailPage })))
 const PedidoListPage = lazy(() => import('../pages/pedidos').then(m => ({ default: m.PedidoListPage })))
+const AdminUsuariosPage = lazy(() => import('../pages/admin/AdminUsuariosPage').then(m => ({ default: m.AdminUsuariosPage })))
+const AdminProductosPage = lazy(() => import('../pages/admin/AdminProductosPage').then(m => ({ default: m.AdminProductosPage })))
+const AdminCategoriasPage = lazy(() => import('../pages/admin/AdminCategoriasPage').then(m => ({ default: m.AdminCategoriasPage })))
+const AdminIngredientesPage = lazy(() => import('../pages/admin/AdminIngredientesPage').then(m => ({ default: m.AdminIngredientesPage })))
 
 export const router = createBrowserRouter([
   // Public-only routes (redirect to / if already authenticated)
@@ -45,6 +49,23 @@ export const router = createBrowserRouter([
           { path: 'checkout', element: <CheckoutPage /> },
           { path: 'pedidos', element: <PedidoListPage /> },
           { path: 'pedidos/:id', element: <PedidoDetailPage /> },
+        ],
+      },
+    ],
+  },
+  // Admin routes (requires ADMIN role)
+  {
+    path: '/admin',
+    element: <AdminRoute />,
+    children: [
+      {
+        element: <Layout />,
+        children: [
+          { path: 'usuarios', element: <AdminUsuariosPage /> },
+          { path: 'productos', element: <AdminProductosPage /> },
+          { path: 'categorias', element: <AdminCategoriasPage /> },
+          { path: 'ingredientes', element: <AdminIngredientesPage /> },
+          { path: 'pedidos', element: <PedidoListPage /> },
         ],
       },
     ],

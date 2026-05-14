@@ -59,6 +59,10 @@ class Pedido(SQLModel, table=True):
     )
     pagos: list["Pago"] = Relationship(back_populates="pedido")
 
+    @property
+    def cantidad_items(self) -> int:
+        return len(self.detalles) if self.detalles else 0
+
 
 class DetallePedido(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

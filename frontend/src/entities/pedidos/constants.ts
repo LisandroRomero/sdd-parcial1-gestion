@@ -15,3 +15,15 @@ export const statusLabels: Record<string, string> = {
   ENTREGADO: 'Entregado',
   CANCELADO: 'Cancelado',
 }
+
+const FSM_TRANSITIONS: Record<string, string> = {
+  CONFIRMADO: 'EN_PREP',
+  EN_PREP: 'EN_CAMINO',
+  EN_CAMINO: 'ENTREGADO',
+}
+
+export function getNextState(currentState: string, roles: string[]): string | null {
+  const canAdvance = roles.includes('ADMIN') || roles.includes('PEDIDOS')
+  if (!canAdvance) return null
+  return FSM_TRANSITIONS[currentState] ?? null
+}

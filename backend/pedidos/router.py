@@ -18,6 +18,7 @@ from backend.pedidos.repository import DetallePedidoRepository, PedidoRepository
 from backend.pedidos.schemas import (
     AvanzarEstadoRequest,
     DetallePedidoRead,
+    DireccionSnapshot,
     HistorialEstadoRead,
     PagoResumen,
     PedidoCreate,
@@ -145,6 +146,10 @@ def get_pedido(
             monto=pago.monto,
         )
 
+    direccion_snapshot: Optional[DireccionSnapshot] = None
+    if pedido.direccion is not None:
+        direccion_snapshot = DireccionSnapshot.model_validate(pedido.direccion)
+
     return PedidoDetail(
         id=pedido.id,
         usuario_id=pedido.usuario_id,
@@ -152,9 +157,11 @@ def get_pedido(
         total=pedido.total,
         costo_envio=pedido.costo_envio,
         created_at=pedido.created_at,
+        cantidad_items=pedido.cantidad_items,
         detalles=[DetallePedidoRead.model_validate(d) for d in pedido.detalles],
         historial_estados=[HistorialEstadoRead.model_validate(h) for h in pedido.historial_estados],
         pago=pago_resumen,
+        direccion=direccion_snapshot,
     )
 
 
@@ -169,6 +176,7 @@ def list_pedidos(
     fecha_hasta: Optional[str] = Query(default=None, description="Filter by end date (YYYY-MM-DD)"),
     page: int = Query(default=1, ge=1, description="Page number (1-indexed)"),
     size: int = Query(default=20, ge=1, le=100, description="Items per page"),
+    buscar: Optional[str] = Query(default=None, description="Search by order ID or client name/lastname"),
     # Backward compatible params (deprecated)
     limit: Optional[int] = Query(default=None, ge=1, le=100, description="[DEPRECATED] Use size instead"),
     offset: Optional[int] = Query(default=None, ge=0, description="[DEPRECATED] Use page instead"),
@@ -195,6 +203,7 @@ def list_pedidos(
         fecha_hasta=fecha_hasta,
         limit=size,
         offset=(page - 1) * size,
+        buscar=buscar,
     )
 
     return PedidoListRead(

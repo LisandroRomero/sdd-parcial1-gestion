@@ -101,7 +101,7 @@ def obtener_producto_publico(
 def crear_producto(
     body: ProductoCreate,
     uow: UnitOfWork = Depends(_get_uow),
-    _: Usuario = Depends(require_role("ADMIN")),
+    _: Usuario = Depends(require_role("ADMIN", "STOCK")),
 ) -> ProductoRead:
     producto = producto_service.crear(uow, body)
     uow.commit()
@@ -118,7 +118,7 @@ def actualizar_producto(
     id: int,
     body: ProductoUpdate,
     uow: UnitOfWork = Depends(_get_uow),
-    _: Usuario = Depends(require_role("ADMIN")),
+    _: Usuario = Depends(require_role("ADMIN", "STOCK")),
 ) -> ProductoRead:
     producto = producto_service.actualizar(uow, id, body)
     uow.commit()
@@ -134,7 +134,7 @@ def actualizar_producto(
 def eliminar_producto(
     id: int,
     uow: UnitOfWork = Depends(_get_uow),
-    _: Usuario = Depends(require_role("ADMIN")),
+    _: Usuario = Depends(require_role("ADMIN", "STOCK")),
 ) -> Response:
     producto_service.eliminar(uow, id)
     uow.commit()
