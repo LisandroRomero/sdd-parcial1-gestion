@@ -7,7 +7,7 @@ export function useEliminarProducto() {
   return useMutation({
     mutationFn: (id: number) => eliminarProducto(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-productos'] })
     },
   })
 }

@@ -8,7 +8,7 @@ export function useCrearProducto() {
   return useMutation({
     mutationFn: (body: ProductoCreate) => crearProducto(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-productos'] })
     },
   })
 }

@@ -83,10 +83,11 @@ class ProductoRepository(BaseRepository[Producto]):
             stmt = stmt.where(Producto.deleted_at.is_(None))
 
         # Apply disponible filter — default to True when not specified
-        if filtros.disponible is None:
-            stmt = stmt.where(Producto.disponible.is_(True))
-        else:
+        # Skip default filter when include_deleted=True (admin wants to see all)
+        if filtros.disponible is not None:
             stmt = stmt.where(Producto.disponible == filtros.disponible)
+        elif not include_deleted:
+            stmt = stmt.where(Producto.disponible.is_(True))
 
         # Optional: categoria_id filter via JOIN to producto_categorias
         if filtros.categoria_id is not None:

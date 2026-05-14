@@ -9,7 +9,7 @@ export function useCambiarDisponibilidadAdmin() {
     mutationFn: ({ id, body }: { id: number; body: DisponibilidadUpdate }) =>
       cambiarDisponibilidad(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-productos'] })
     },
   })
 }

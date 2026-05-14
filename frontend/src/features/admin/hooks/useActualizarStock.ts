@@ -9,7 +9,7 @@ export function useActualizarStock() {
     mutationFn: ({ id, body }: { id: number; body: StockUpdate }) =>
       actualizarStockAdmin(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-productos'] })
     },
   })
 }

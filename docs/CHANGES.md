@@ -66,6 +66,7 @@ Notas:
 | 7.3 | admin-product-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-product-management/` |
 | 7.4 | admin-order-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-order-management/` |
 | 7.5 | admin-settings-and-configuration | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-settings-and-configuration/` |
+| — | fix-run-server-port-and-deleted-toggle | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-fix-run-server-port-and-deleted-toggle/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 

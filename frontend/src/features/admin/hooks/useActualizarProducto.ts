@@ -9,7 +9,7 @@ export function useActualizarProducto() {
     mutationFn: ({ id, body }: { id: number; body: ProductoUpdate }) =>
       actualizarProducto(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-productos'] })
     },
   })
 }
