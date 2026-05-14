@@ -41,6 +41,17 @@ export function Layout() {
                 Catálogo
               </NavLink>
               <NavLink
+                to="/pedidos"
+                end={false}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'text-orange-500 font-semibold text-sm'
+                    : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
+                }
+              >
+                {user?.roles.includes('CLIENT') ? 'Mis Pedidos' : 'Pedidos'}
+              </NavLink>
+              <NavLink
                 to="/perfil"
                 end={false}
                 className={({ isActive }) =>

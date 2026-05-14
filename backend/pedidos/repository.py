@@ -33,6 +33,8 @@ class PedidoRepository(BaseRepository[Pedido]):
         self,
         usuario_id: Optional[int] = None,
         estado: Optional[str] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None,
         limit: int = 20,
         offset: int = 0,
     ) -> tuple[list[Pedido], int]:
@@ -47,6 +49,14 @@ class PedidoRepository(BaseRepository[Pedido]):
         if estado is not None:
             query = query.where(Pedido.estado_actual == estado)
             count_query = count_query.where(Pedido.estado_actual == estado)
+
+        if fecha_desde is not None:
+            query = query.where(Pedido.created_at >= fecha_desde)
+            count_query = count_query.where(Pedido.created_at >= fecha_desde)
+
+        if fecha_hasta is not None:
+            query = query.where(Pedido.created_at <= fecha_hasta + " 23:59:59")
+            count_query = count_query.where(Pedido.created_at <= fecha_hasta + " 23:59:59")
 
         total = self.session.exec(count_query).one()
 

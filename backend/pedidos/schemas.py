@@ -43,19 +43,35 @@ class PedidoUpdate(BaseModel):
 
 
 class PedidoRead(BaseModel):
+    """Compact schema for order listings — no details, history, or payment data."""
+
     id: int
     usuario_id: int
-    forma_pago_codigo: Optional[str] = None
-    direccion_id: int
     estado_actual: str
     total: Decimal
     costo_envio: Decimal
     created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    detalles: list[DetallePedidoRead] = []
-    historial_estados: list["HistorialEstadoRead"] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PagoResumen(BaseModel):
+    """Minimal payment summary embedded in PedidoDetail."""
+
+    id: int
+    estado_pago: Optional[str] = None
+    metodo_pago: Optional[str] = None
+    monto: Decimal
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PedidoDetail(PedidoRead):
+    """Full order detail — extends PedidoRead with items, history, and payment."""
+
+    detalles: list[DetallePedidoRead] = []
+    historial_estados: list["HistorialEstadoRead"] = []
+    pago: Optional[PagoResumen] = None
 
 
 class AvanzarEstadoRequest(BaseModel):
@@ -83,7 +99,10 @@ class HistorialEstadoRead(BaseModel):
 
 
 class PedidoListRead(BaseModel):
+    """Paginated order list response with page/size format."""
+
     items: list[PedidoRead]
     total: int
-    limit: int
-    offset: int
+    page: int
+    size: int
+    pages: int

@@ -4,7 +4,7 @@
 >
 > Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-**Última actualización:** 2026-05-13
+**Última actualización:** 2026-05-14
 
 ---
 
@@ -60,6 +60,7 @@ Notas:
 | — | fix-cart-persistence-and-checkout | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-fix-cart-persistence-and-checkout/` |
 | — | fix-lazy-routing-suspense | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-fix-lazy-routing-suspense/` |
 | 5.4 | order-history-audit-trail | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-order-history-audit-trail/` |
+| 5.5 | order-list-and-detail | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-order-list-and-detail/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -103,7 +104,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 5.5 | order-list-and-detail | US-049..US-051 | GET /pedidos listado/filtros + detalle completo + pertenencia CLIENT | 5.4, 1.5 |
 | 5.6 | frontend-order-history | US-049..US-051, US-044 | Página "Mis Pedidos": listado con estado + detalle de pedido con líneas, timeline de historial de estados | 5.5, 1.7 |
 
 ---

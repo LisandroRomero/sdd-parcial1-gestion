@@ -12,6 +12,19 @@ import { Button, Card, CardHeader, CardContent } from '@/shared/components'
 const formatARS = (value: string) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(value))
 
+const PAYMENT_LABELS: Record<string, string> = {
+  TARJETA: 'Tarjeta',
+  RAPIPAGO: 'Rapipago',
+  PAGO_FACIL: 'Pago Fácil',
+}
+
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  approved: 'Aprobado',
+  rejected: 'Rechazado',
+  in_process: 'En proceso',
+  pending: 'Pendiente',
+}
+
 const formatDate = (dateString: string) =>
   new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(dateString))
 
@@ -128,6 +141,34 @@ export function PedidoDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {pedido.pago && (
+        <Card className="mb-6">
+          <CardHeader>
+            <h2 className="text-lg font-semibold text-gray-900">Información de pago</h2>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Método de pago</p>
+                <p className="font-medium text-gray-900">
+                  {PAYMENT_LABELS[pedido.pago.metodo_pago ?? ''] ?? pedido.pago.metodo_pago ?? '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Estado del pago</p>
+                <p className="font-medium text-gray-900">
+                  {PAYMENT_STATUS_LABELS[pedido.pago.estado_pago ?? ''] ?? pedido.pago.estado_pago ?? '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Monto</p>
+                <p className="font-medium text-gray-900">{formatARS(pedido.pago.monto)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="mb-6">
         <CardHeader>

@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cancelarPedido } from '@/entities/pedidos'
 import { useUIStore } from '@/shared/lib/stores/ui.store'
 import { getErrorMessage } from '@/shared/api'
-import type { PedidoRead } from '@/entities/pedidos'
 
 const ERROR_MESSAGES: Record<string, string> = {
   PEDIDO_ESTADO_TERMINAL: 'El pedido ya está en un estado terminal. No se puede cancelar.',

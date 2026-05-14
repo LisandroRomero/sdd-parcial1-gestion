@@ -10,6 +10,7 @@ export interface PedidoCreate {
   detalles: DetallePedidoCreate[]
 }
 
+/** Compact order schema for listings — no details, history, or payment data. */
 export interface PedidoRead {
   id: number
   usuario_id: number
@@ -17,10 +18,20 @@ export interface PedidoRead {
   total: string
   costo_envio: string
   created_at: string
-  updated_at?: string
-  direccion_id: number
+}
+
+export interface PagoResumen {
+  id: number
+  estado_pago: string | null
+  metodo_pago: string | null
+  monto: string
+}
+
+/** Full order detail — extends PedidoRead with items, history, and payment. */
+export interface PedidoDetail extends PedidoRead {
   detalles: DetallePedidoRead[]
   historial_estados: HistorialEstadoRead[]
+  pago: PagoResumen | null
 }
 
 export interface DetallePedidoRead {
@@ -45,4 +56,22 @@ export interface HistorialEstadoRead {
   usuario_id: number | null
   motivo: string | null
   created_at: string
+}
+
+/** Paginated order list response with page/size format. */
+export interface PedidoListRead {
+  items: PedidoRead[]
+  total: number
+  page: number
+  size: number
+  pages: number
+}
+
+/** Parameters for listing orders with pagination and filters. */
+export interface ListarPedidosParams {
+  estado?: string
+  fecha_desde?: string
+  fecha_hasta?: string
+  page?: number
+  size?: number
 }

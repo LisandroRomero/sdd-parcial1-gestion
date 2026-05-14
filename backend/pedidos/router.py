@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from math import ceil
 
 from typing import Optional
 
@@ -16,8 +17,11 @@ from backend.pedidos import service as pedido_service
 from backend.pedidos.repository import DetallePedidoRepository, PedidoRepository
 from backend.pedidos.schemas import (
     AvanzarEstadoRequest,
+    DetallePedidoRead,
     HistorialEstadoRead,
+    PagoResumen,
     PedidoCreate,
+    PedidoDetail,
     PedidoListRead,
     PedidoRead,
 )
@@ -113,14 +117,14 @@ def cancelar_pedido_endpoint(
 
 @router.get(
     "/{id}",
-    response_model=PedidoRead,
+    response_model=PedidoDetail,
     summary="Get order by ID",
 )
 def get_pedido(
     id: int,
     uow: UnitOfWork = Depends(_get_uow),
     current_user: Usuario = Depends(get_current_user),
-) -> PedidoRead:
+) -> PedidoDetail:
     pedido = uow.repos.pedidos.get(id)
     if pedido is None:
         raise NotFoundException("PEDIDO_NOT_FOUND")
@@ -130,7 +134,28 @@ def get_pedido(
     if "CLIENT" in user_roles and len(user_roles) == 1 and pedido.usuario_id != current_user.id:
         raise ForbiddenException("PEDIDO_NO_AUTORIZADO")
 
-    return PedidoRead.model_validate(pedido)
+    # Build PagoResumen from the first associated payment (if any)
+    pago_resumen: Optional[PagoResumen] = None
+    if pedido.pagos:
+        pago = pedido.pagos[0]
+        pago_resumen = PagoResumen(
+            id=pago.id,
+            estado_pago=pago.mp_status,
+            metodo_pago=pedido.forma_pago_codigo,
+            monto=pago.monto,
+        )
+
+    return PedidoDetail(
+        id=pedido.id,
+        usuario_id=pedido.usuario_id,
+        estado_actual=pedido.estado_actual,
+        total=pedido.total,
+        costo_envio=pedido.costo_envio,
+        created_at=pedido.created_at,
+        detalles=[DetallePedidoRead.model_validate(d) for d in pedido.detalles],
+        historial_estados=[HistorialEstadoRead.model_validate(h) for h in pedido.historial_estados],
+        pago=pago_resumen,
+    )
 
 
 @router.get(
@@ -140,8 +165,13 @@ def get_pedido(
 )
 def list_pedidos(
     estado: Optional[str] = Query(default=None, description="Filter by state"),
-    limit: int = Query(default=20, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    fecha_desde: Optional[str] = Query(default=None, description="Filter by start date (YYYY-MM-DD)"),
+    fecha_hasta: Optional[str] = Query(default=None, description="Filter by end date (YYYY-MM-DD)"),
+    page: int = Query(default=1, ge=1, description="Page number (1-indexed)"),
+    size: int = Query(default=20, ge=1, le=100, description="Items per page"),
+    # Backward compatible params (deprecated)
+    limit: Optional[int] = Query(default=None, ge=1, le=100, description="[DEPRECATED] Use size instead"),
+    offset: Optional[int] = Query(default=None, ge=0, description="[DEPRECATED] Use page instead"),
     uow: UnitOfWork = Depends(_get_uow),
     current_user: Usuario = Depends(get_current_user),
 ) -> PedidoListRead:
@@ -152,18 +182,27 @@ def list_pedidos(
     if user_roles == {"CLIENT"}:
         usuario_id = current_user.id
 
+    # Backward compatibility: if limit/offset provided, convert to page/size
+    if limit is not None:
+        size = limit
+    if offset is not None:
+        page = (offset // size) + 1
+
     items, total = uow.repos.pedidos.list_pedidos(
         usuario_id=usuario_id,
         estado=estado,
-        limit=limit,
-        offset=offset,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+        limit=size,
+        offset=(page - 1) * size,
     )
 
     return PedidoListRead(
         items=[PedidoRead.model_validate(p) for p in items],
         total=total,
-        limit=limit,
-        offset=offset,
+        page=page,
+        size=size,
+        pages=ceil(total / size) if total > 0 else 0,
     )
 
 
