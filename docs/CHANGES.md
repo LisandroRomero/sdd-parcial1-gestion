@@ -67,6 +67,7 @@ Notas:
 | 7.4 | admin-order-management | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-order-management/` |
 | 7.5 | admin-settings-and-configuration | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-admin-settings-and-configuration/` |
 | — | fix-run-server-port-and-deleted-toggle | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-fix-run-server-port-and-deleted-toggle/` |
+| 8.1 | error-handling-standardized | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-error-handling-standardized/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -137,7 +138,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 8.1 | error-handling-standardized | US-068, US-074 | RFC 7807 + validación inputs + sanitización XSS/SQLi | 0.4, 0.2 | Implementar temprano |
 | 8.2 | testing-and-fixtures | Bonus | Pytest: auth/pagos/pedidos/producto + fixtures + mocks MP | Todos | Opcional recomendado |
 | 8.3 | frontend-error-and-empty-states | US-068, US-074 | Páginas 404/500, estados vacíos globales, toast system, error boundaries por sección | 0.2, 1.7 | UX mínima indispensable |
 | 8.4 | frontend-home-and-navigation | — | Landing page con CTA al catálogo, navbar con links a Catálogo/Mis Pedidos/Perfil, footer | 1.7, 2.6 | Sin nav el usuario no puede moverse por la app |
