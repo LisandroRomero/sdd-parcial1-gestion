@@ -37,6 +37,11 @@ def engine():
         "categoria",
         "producto",
         "productocategoria",
+        "estadopedido",
+        "pedido",
+        "historialestadopedido",
+        "direccionentrega",
+        "formapago",
     }
     tables = [t for name, t in SQLModel.metadata.tables.items() if name in wanted]
     SQLModel.metadata.create_all(engine, tables=tables)
@@ -57,12 +62,14 @@ def client(engine) -> Generator[TestClient, None, None]:
     import backend.categorias.router as categorias_router
     import backend.ingredientes.router as ingredientes_router
     import backend.productos.router as productos_router
+    import backend.pedidos.router as pedidos_router
 
     core_database.engine = engine
     core_dependencies.engine = engine
     categorias_router.engine = engine
     ingredientes_router.engine = engine
     productos_router.engine = engine
+    pedidos_router.engine = engine
 
     app = create_app()
 

@@ -2,28 +2,12 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getPedido } from '@/entities/pedidos'
+import { statusColors, statusLabels } from '@/entities/pedidos/constants'
+import { OrderTimeline } from '@/entities/pedidos/ui/OrderTimeline'
 import { canCancel, useCancelarPedido, CancelarPedidoModal } from '@/features/pedidos'
 import { useAuthStore } from '@/shared/lib/stores/auth.store'
 import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
 import { Button, Card, CardHeader, CardContent } from '@/shared/components'
-
-const statusColors: Record<string, string> = {
-  PENDIENTE: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  CONFIRMADO: 'bg-blue-100 text-blue-800 border-blue-300',
-  EN_PREP: 'bg-purple-100 text-purple-800 border-purple-300',
-  EN_CAMINO: 'bg-indigo-100 text-indigo-800 border-indigo-300',
-  ENTREGADO: 'bg-green-100 text-green-800 border-green-300',
-  CANCELADO: 'bg-red-100 text-red-800 border-red-300',
-}
-
-const statusLabels: Record<string, string> = {
-  PENDIENTE: 'Pendiente',
-  CONFIRMADO: 'Confirmado',
-  EN_PREP: 'En preparación',
-  EN_CAMINO: 'En camino',
-  ENTREGADO: 'Entregado',
-  CANCELADO: 'Cancelado',
-}
 
 const formatARS = (value: string) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(value))
@@ -171,40 +155,7 @@ export function PedidoDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900">Historial de estados</h2>
         </CardHeader>
         <CardContent>
-          <div className="space-y-0">
-            {pedido.historial_estados.map((h, idx) => (
-              <div key={h.id} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-3 h-3 rounded-full mt-1.5 ring-2 ring-white ${
-                      h.estado_hasta === 'CANCELADO'
-                        ? 'bg-red-400'
-                        : 'bg-primary'
-                    }`}
-                  />
-                  {idx < pedido.historial_estados.length - 1 && (
-                    <div className="w-0.5 flex-1 bg-gray-200 min-h-[2rem]" />
-                  )}
-                </div>
-                <div className={`flex-1 ${idx < pedido.historial_estados.length - 1 ? 'pb-4' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">
-                      {statusLabels[h.estado_hasta] ?? h.estado_hasta}
-                    </span>
-                    {h.estado_desde && (
-                      <span className="text-xs text-gray-400">
-                        (desde {statusLabels[h.estado_desde] ?? h.estado_desde})
-                      </span>
-                    )}
-                  </div>
-                  {h.motivo && (
-                    <p className="text-sm text-gray-500 mt-0.5">{h.motivo}</p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">{formatDate(h.created_at)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <OrderTimeline historial={pedido.historial_estados} />
         </CardContent>
       </Card>
 

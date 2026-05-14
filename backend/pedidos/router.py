@@ -181,5 +181,9 @@ def get_historial_pedido(
     if pedido is None:
         raise NotFoundException("PEDIDO_NOT_FOUND")
 
+    user_roles = {ur.rol_codigo for ur in current_user.roles}
+    if "CLIENT" in user_roles and len(user_roles) == 1 and pedido.usuario_id != current_user.id:
+        raise ForbiddenException("PEDIDO_NO_AUTORIZADO")
+
     historial = uow.repos.pedidos.get_historial(id)
     return [HistorialEstadoRead.model_validate(h) for h in historial]
