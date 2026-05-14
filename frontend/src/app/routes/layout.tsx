@@ -1,7 +1,13 @@
-import { Outlet, useNavigate, NavLink } from 'react-router-dom'
+import { useState } from 'react'
+import { Outlet, useNavigate } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 import { CartBadge, CartDrawer } from '@/features/carrito'
-import { useAuthStore } from '@/shared/lib/stores'
+import { useAuthStore, useUIStore } from '@/shared/lib/stores'
 import { logoutUser } from '@/features/auth'
+import { Sidebar } from '@/app/navigation/Sidebar'
+import { Drawer } from '@/app/navigation/Drawer'
+import { navigationSections } from '@/app/navigation/navigation.config'
+import { useFilteredNavSections } from '@/app/navigation/navigation.hooks'
 
 export function Layout() {
   const navigate = useNavigate()
@@ -9,6 +15,12 @@ export function Layout() {
   const user = useAuthStore((s) => s.user)
   const refreshToken = useAuthStore((s) => s.refreshToken)
   const logout = useAuthStore((s) => s.logout)
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen)
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar)
+
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const filteredSections = useFilteredNavSections(navigationSections)
 
   async function handleLogout() {
     try {
@@ -16,135 +28,64 @@ export function Layout() {
         await logoutUser(refreshToken)
       }
     } catch {
-      // Silent fail — proceed with local logout regardless
+      // Silent fail — proceed with local logout
     }
     logout()
     navigate('/login', { replace: true })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h1 className="text-xl font-bold text-gray-900">Food Store</h1>
-            <nav className="flex items-center gap-4">
-              <NavLink
-                to="/catalogo"
-                end={false}
-                className={({ isActive }) =>
-                  isActive
-                    ? 'text-orange-500 font-semibold text-sm'
-                    : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                }
+    <div className="h-screen bg-gray-50">
+      <Sidebar
+        collapsed={!sidebarOpen}
+        onToggle={toggleSidebar}
+        sections={filteredSections}
+      />
+      <div
+        className={`h-screen flex flex-col transition-all duration-200 ${
+          sidebarOpen ? 'md:ml-64' : 'md:ml-16'
+        }`}
+      >
+        <header className="bg-white shadow-sm flex-shrink-0">
+          <div className="flex items-center justify-between px-4 h-16">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="md:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                aria-label="Abrir navegación"
               >
-                Catálogo
-              </NavLink>
-              <NavLink
-                to="/pedidos"
-                end={false}
-                className={({ isActive }) =>
-                  isActive
-                    ? 'text-orange-500 font-semibold text-sm'
-                    : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                }
-              >
-                {user?.roles.includes('CLIENT') ? 'Mis Pedidos' : 'Pedidos'}
-              </NavLink>
-              <NavLink
-                to="/perfil"
-                end={false}
-                className={({ isActive }) =>
-                  isActive
-                    ? 'text-orange-500 font-semibold text-sm'
-                    : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                }
-              >
-                Mi Perfil
-              </NavLink>
-              {user?.roles.includes('ADMIN') && (
-                <>
-                  <span className="text-gray-300 text-sm">|</span>
-                  <NavLink
-                    to="/admin/usuarios"
-                    end={false}
-                    className={({ isActive }) =>
-                      isActive
-                        ? 'text-orange-500 font-semibold text-sm'
-                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                    }
-                  >
-                    Usuarios
-                  </NavLink>
-                  <NavLink
-                    to="/admin/productos"
-                    end={false}
-                    className={({ isActive }) =>
-                      isActive
-                        ? 'text-orange-500 font-semibold text-sm'
-                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                    }
-                  >
-                    Productos
-                  </NavLink>
-                  <NavLink
-                    to="/admin/categorias"
-                    end={false}
-                    className={({ isActive }) =>
-                      isActive
-                        ? 'text-orange-500 font-semibold text-sm'
-                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                    }
-                  >
-                    Categorías
-                  </NavLink>
-                  <NavLink
-                    to="/admin/ingredientes"
-                    end={false}
-                    className={({ isActive }) =>
-                      isActive
-                        ? 'text-orange-500 font-semibold text-sm'
-                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                    }
-                  >
-                    Ingredientes
-                  </NavLink>
-                  <NavLink
-                    to="/admin/configuracion"
-                    end={false}
-                    className={({ isActive }) =>
-                      isActive
-                        ? 'text-orange-500 font-semibold text-sm'
-                        : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
-                    }
-                  >
-                    Configuración
-                  </NavLink>
-                </>
-              )}
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            {isAuthenticated && user && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600">
-                  Hola, <span className="font-medium text-gray-900">{user.nombre}</span>
+                <Menu size={20} />
+              </button>
+            </div>
+            <div className="flex items-center gap-4">
+              {isAuthenticated && user && (
+                <span className="text-sm text-gray-600 hidden sm:block">
+                  Hola, <span className="font-medium">{user.nombre}</span>
                 </span>
+              )}
+              {isAuthenticated && (
                 <button
                   onClick={handleLogout}
                   className="text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
                 >
                   Cerrar sesión
                 </button>
-              </div>
-            )}
-            <CartBadge />
+              )}
+              <CartBadge />
+            </div>
           </div>
-        </div>
-      </header>
-      <main className="container mx-auto px-4 py-8">
-        <Outlet />
-      </main>
+        </header>
+        <main className="flex-1 overflow-auto">
+          <div className="container mx-auto px-4 py-8">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        sections={filteredSections}
+      />
       <CartDrawer />
     </div>
   )

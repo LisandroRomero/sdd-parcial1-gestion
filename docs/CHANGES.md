@@ -69,6 +69,7 @@ Notas:
 | — | fix-run-server-port-and-deleted-toggle | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-fix-run-server-port-and-deleted-toggle/` |
 | 8.1 | error-handling-standardized | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-error-handling-standardized/` |
 | 8.3 | frontend-error-and-empty-states | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-error-and-empty-states/` |
+| — | frontend-sidebar-navigation | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-sidebar-navigation/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
