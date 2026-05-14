@@ -195,6 +195,23 @@ Esto asegura que **todo** lo trabajado en la sesión (código + memorias de Engr
 
 **Importante:** después del push, recién ahí llamar a `mem_session_summary` para cerrar la sesión en Engram.
 
+### Verificar estado de sync
+
+```bash
+engram sync --status
+```
+
+Muestra cuántos chunks existen localmente vs en el repo y si hay imports pendientes.
+
+### Exportar memorias antes de pushear
+
+Si el usuario quiere pushear los cambios después del cierre de sesión:
+
+```bash
+git push
+```
+
+---
 ### Fallback si el push falla
 
 Si `git push` falla (conflictos en remoto, sin acceso, etc.):
