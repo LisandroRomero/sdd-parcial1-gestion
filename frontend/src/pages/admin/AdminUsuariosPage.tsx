@@ -4,8 +4,10 @@ import { useToggleEstadoUsuario } from '@/features/admin/hooks/useToggleEstadoUs
 import { useActualizarUsuarioAdmin } from '@/features/admin/hooks/useActualizarUsuarioAdmin'
 import type { AdminUsuarioRead, AdminUsuarioUpdate } from '@/entities/admin/types'
 import { OrderPagination } from '@/features/pedidos/components/OrderPagination'
-import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
+import { LoadingSpinner, ErrorMessage, EmptyState, NoPermissionMessage, OfflineMessage } from '@/shared/ui'
 import { Button } from '@/shared/components'
+import { getAuthErrorStatus, getErrorMessage } from '@/shared/api'
+import { useOffline } from '@/shared/lib/hooks'
 
 const ROLES = ['CLIENT', 'ADMIN', 'GESTOR_PEDIDOS', 'GESTOR_STOCK'] as const
 
@@ -167,6 +169,7 @@ export function AdminUsuariosPage() {
   const [rol, setRol] = useState<string | undefined>(undefined)
   const [page, setPage] = useState(1)
   const [editingUser, setEditingUser] = useState<AdminUsuarioRead | null>(null)
+  const isOffline = useOffline()
 
   const { data, isLoading, isError, error, refetch } = useListarUsuariosAdmin({
     buscar: buscar || undefined,
@@ -177,6 +180,7 @@ export function AdminUsuariosPage() {
 
   const toggleEstado = useToggleEstadoUsuario()
   const actualizarUsuario = useActualizarUsuarioAdmin()
+  const authStatus = isError ? getAuthErrorStatus(error) : undefined
 
   // Debounce search — trigger query update after 400ms
   let debounceTimer: ReturnType<typeof setTimeout>
@@ -217,10 +221,11 @@ export function AdminUsuariosPage() {
 
   if (isError && !data) {
     return (
-      <ErrorMessage
-        message={error instanceof Error ? error.message : 'Error al cargar los usuarios'}
-        onRetry={refetch}
-      />
+      authStatus ? (
+        <NoPermissionMessage status={authStatus} />
+      ) : (
+        <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
+      )
     )
   }
 
@@ -231,6 +236,7 @@ export function AdminUsuariosPage() {
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Gestión de usuarios</h1>
+      {isOffline && <div className="mb-4"><OfflineMessage /></div>}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">

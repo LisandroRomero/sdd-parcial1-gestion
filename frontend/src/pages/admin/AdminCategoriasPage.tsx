@@ -4,8 +4,10 @@ import { useCrearCategoria } from '@/features/admin/hooks/useCrearCategoria'
 import { useActualizarCategoria } from '@/features/admin/hooks/useActualizarCategoria'
 import { useEliminarCategoria } from '@/features/admin/hooks/useEliminarCategoria'
 import type { CategoriaAdminRead, CategoriaCreate, CategoriaUpdate } from '@/entities/admin/types'
-import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
+import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage, NoPermissionMessage } from '@/shared/ui'
 import { Button } from '@/shared/components'
+import { useOffline } from '@/shared/lib/hooks'
+import { getAuthErrorStatus, getErrorMessage } from '@/shared/api'
 
 // ---------------------------------------------------------------------------
 // Modal — Crear / Editar categoria
@@ -128,6 +130,7 @@ export function AdminCategoriasPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const isOffline = useOffline()
 
   const { data, isLoading, isError, error, refetch } = useListarCategoriasAdmin()
   const crearCategoria = useCrearCategoria()
@@ -144,8 +147,7 @@ export function AdminCategoriasPage() {
     crearCategoria.mutate(body as CategoriaCreate, {
       onSuccess: () => setShowCreate(false),
       onError: (err) => {
-        const msg = err instanceof Error ? err.message : 'Error al crear la categoria'
-        setMutationError(msg)
+        setMutationError(getErrorMessage(err))
       },
     })
   }
@@ -158,8 +160,7 @@ export function AdminCategoriasPage() {
       {
         onSuccess: () => setEditingCategoria(null),
         onError: (err) => {
-          const msg = err instanceof Error ? err.message : 'Error al actualizar la categoria'
-          setMutationError(msg)
+          setMutationError(getErrorMessage(err))
         },
       },
     )
@@ -170,11 +171,7 @@ export function AdminCategoriasPage() {
     eliminarCategoria.mutate(id, {
       onSuccess: () => setConfirmDeleteId(null),
       onError: (err) => {
-        const msg =
-          err instanceof Error
-            ? err.message
-            : 'No se puede eliminar. Puede tener productos o subcategorias asociadas.'
-        setDeleteError(msg)
+        setDeleteError(getErrorMessage(err))
       },
     })
   }
@@ -189,10 +186,11 @@ export function AdminCategoriasPage() {
 
   if (isError && !data) {
     return (
-      <ErrorMessage
-        message={error instanceof Error ? error.message : 'Error al cargar las categorias'}
-        onRetry={refetch}
-      />
+      getAuthErrorStatus(error) ? (
+        <NoPermissionMessage status={getAuthErrorStatus(error)} />
+      ) : (
+        <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
+      )
     )
   }
 
@@ -211,6 +209,8 @@ export function AdminCategoriasPage() {
           + Nueva categoria
         </Button>
       </div>
+
+      {isOffline && <div className="mb-4"><OfflineMessage /></div>}
 
       {categorias.length === 0 ? (
         <EmptyState

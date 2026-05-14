@@ -7,8 +7,10 @@ import { OrderTimeline } from '@/entities/pedidos/ui/OrderTimeline'
 import { canCancel, useCancelarPedido, CancelarPedidoModal } from '@/features/pedidos'
 import { useAvanzarEstado } from '@/features/pedidos/hooks/useAvanzarEstado'
 import { useAuthStore } from '@/shared/lib/stores/auth.store'
-import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
+import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage } from '@/shared/ui'
 import { Button, Card, CardHeader, CardContent } from '@/shared/components'
+import { getErrorMessage } from '@/shared/api'
+import { useOffline } from '@/shared/lib/hooks'
 
 const formatARS = (value: string) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(value))
@@ -41,6 +43,7 @@ export function PedidoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const numericId = id ? parseInt(id, 10) : 0
   const user = useAuthStore((s) => s.user)
+  const isOffline = useOffline()
 
   const { data: pedido, isLoading, isError, error, refetch } = usePedido(numericId)
   const cancelMutation = useCancelarPedido()
@@ -69,7 +72,7 @@ export function PedidoDetailPage() {
     )
   }
 
-  if (isError && is404) {
+  if (isError && is404 && !pedido) {
     return (
       <EmptyState
         title="Pedido no encontrado"
@@ -78,12 +81,12 @@ export function PedidoDetailPage() {
     )
   }
 
-  if (isError) {
+  if (isError && !pedido) {
     return (
-      <ErrorMessage
-        message={error instanceof Error ? error.message : 'Error al cargar el pedido'}
-        onRetry={refetch}
-      />
+      <div className="space-y-4">
+        <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
+        {isOffline && <OfflineMessage />}
+      </div>
     )
   }
 
@@ -116,6 +119,13 @@ export function PedidoDetailPage() {
           {statusLabels[pedido.estado_actual] ?? pedido.estado_actual}
         </span>
       </div>
+
+      {isOffline && <div className="mb-6"><OfflineMessage /></div>}
+      {isError && (
+        <div className="mb-6">
+          <ErrorMessage compact message={getErrorMessage(error)} onRetry={refetch} />
+        </div>
+      )}
 
       <Card className="mb-6">
         <CardHeader>
@@ -233,12 +243,15 @@ export function PedidoDetailPage() {
                 onClick={() => avanzarMutation.mutate({ nuevo_estado: nextState })}
                 disabled={avanzarMutation.isPending}
               >
-                {avanzarMutation.isPending ? 'Avanzando...' : `Avanzar a ${statusLabels[nextState] ?? nextState}`}
+              {avanzarMutation.isPending ? 'Avanzando...' : `Avanzar a ${statusLabels[nextState] ?? nextState}`}
               </Button>
               {avanzarMutation.isError && (
-                <p className="text-sm text-red-600 mt-1">
-                  {(avanzarMutation.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ?? 'Error al avanzar el estado'}
-                </p>
+                <ErrorMessage
+                  compact
+                  message={getErrorMessage(avanzarMutation.error)}
+                  onRetry={() => avanzarMutation.mutate({ nuevo_estado: nextState })}
+                  className="mt-2"
+                />
               )}
             </div>
           )}

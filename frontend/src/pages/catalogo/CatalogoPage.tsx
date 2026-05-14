@@ -2,6 +2,10 @@ import { useSearchParams } from 'react-router-dom'
 import type { ProductoFiltros } from '@/entities/producto'
 import { useProductos } from '@/features/catalogo'
 import { ProductGrid, CatalogFilters, CatalogPagination } from '@/features/catalogo'
+import { Button } from '@/shared/components'
+import { ErrorMessage, OfflineMessage, LoadingSpinner } from '@/shared/ui'
+import { useOffline } from '@/shared/lib/hooks'
+import { getErrorMessage } from '@/shared/api'
 
 function parseFiltersFromURL(params: URLSearchParams): ProductoFiltros {
   const filtros: ProductoFiltros = {}
@@ -33,8 +37,9 @@ function parseFiltersFromURL(params: URLSearchParams): ProductoFiltros {
 export function CatalogoPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const filtros = parseFiltersFromURL(searchParams)
+  const isOffline = useOffline()
 
-  const { data, isLoading } = useProductos(filtros)
+  const { data, isLoading, isError, error, refetch } = useProductos(filtros)
 
   const currentPage = filtros.page ?? 1
   const totalPages = data?.pages ?? 1
@@ -59,6 +64,12 @@ export function CatalogoPage() {
         )}
       </div>
 
+      {isOffline && (
+        <div className="mb-6">
+          <OfflineMessage />
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar filters */}
         <aside className="w-full lg:w-64 shrink-0">
@@ -67,7 +78,37 @@ export function CatalogoPage() {
 
         {/* Product grid */}
         <div className="flex-1 min-w-0">
-          <ProductGrid items={data?.items ?? []} isLoading={isLoading} />
+          {isLoading && !data && (
+            <div className="mb-4 flex items-center justify-center py-12">
+              <LoadingSpinner size="lg" />
+            </div>
+          )}
+          {isError && !data ? (
+            <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} className="mb-4" />
+          ) : null}
+          <ProductGrid
+            items={data?.items ?? []}
+            isLoading={isLoading}
+            emptyAction={
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setSearchParams((prev) => {
+                    const next = new URLSearchParams(prev)
+                    next.delete('categoria_id')
+                    next.delete('precio_min')
+                    next.delete('precio_max')
+                    next.delete('busqueda')
+                    next.delete('tiene_alergenos')
+                    next.set('page', '1')
+                    return next
+                  })
+                }
+              >
+                Limpiar filtros
+              </Button>
+            }
+          />
           {data && (
             <CatalogPagination
               page={currentPage}

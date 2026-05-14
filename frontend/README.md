@@ -73,6 +73,56 @@ cp .env.example .env
 
 Los tokens de diseño están definidos en `src/index.css` usando la sintaxis `@theme` de Tailwind v4.
 
+## Guía de Estados de UI
+
+Usá estos patrones en pantallas que consumen datos remotos:
+
+- `LoadingSpinner` o skeletons para carga inicial.
+- `EmptyState` cuando no hay datos, con CTA claro por pantalla.
+- `ErrorMessage` para errores inline, siempre con `getErrorMessage(error)`.
+- `OfflineMessage` cuando `useOffline()` devuelve `true`.
+- `NoPermissionMessage` cuando `getAuthErrorStatus(error)` devuelve `401` o `403`.
+
+Reglas prácticas:
+
+- Si hay `data` previa, no reemplaces la vista entera por error de refetch.
+- Si la query falla por primera vez y no hay data, mostr
+  `ErrorMessage` con `onRetry`.
+- Si la pantalla depende de una acción crítica, deshabilitá el CTA mientras no haya conexión.
+- No uses `error.message` directo en UI.
+
+### TanStack Query
+
+Separá carga inicial de errores de refetch:
+
+```tsx
+const { data, isLoading, isError, error, refetch } = useQuery(...)
+
+if (isLoading && !data) return <LoadingSpinner />
+
+if (isError && !data) {
+  const status = getAuthErrorStatus(error)
+  return status ? (
+    <NoPermissionMessage status={status} />
+  ) : (
+    <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
+  )
+}
+
+return (
+  <>
+    {data?.items.length === 0 ? <EmptyState title="Sin resultados" /> : <Results data={data} />}
+    {isError && data && <ErrorMessage compact message={getErrorMessage(error)} onRetry={refetch} />}
+  </>
+)
+```
+
+### Ejemplos del repo
+
+- `frontend/src/pages/catalogo/CatalogoPage.tsx` muestra `OfflineMessage`, `ErrorMessage` inline y CTA para limpiar filtros.
+- `frontend/src/pages/checkout/CheckoutPage.tsx` mapea `401/403` a `NoPermissionMessage` y bloquea la acción si no hay conexión.
+- `frontend/src/pages/pedidos/PedidoDetailPage.tsx` conserva la vista si falla una mutación y muestra el error cerca del CTA.
+
 ## Enlaces
 
 - [Documentación de React](https://react.dev)

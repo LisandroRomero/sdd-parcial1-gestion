@@ -1,14 +1,16 @@
 import type { ProductoRead } from '@/entities/producto'
 import { EmptyState } from '@/shared/ui/EmptyState'
+import type { ReactNode } from 'react'
 import { ProductCard } from './ProductCard'
 import { ProductCardSkeleton } from './ProductCardSkeleton'
 
 interface ProductGridProps {
   items: ProductoRead[]
   isLoading: boolean
+  emptyAction?: ReactNode
 }
 
-export function ProductGrid({ items, isLoading }: ProductGridProps) {
+export function ProductGrid({ items, isLoading, emptyAction }: ProductGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -25,6 +27,7 @@ export function ProductGrid({ items, isLoading }: ProductGridProps) {
         icon={<span className="text-5xl">🔍</span>}
         title="No se encontraron productos"
         description="Intentá con otros filtros o limpiá la búsqueda para ver todos los productos."
+        action={emptyAction}
       />
     )
   }

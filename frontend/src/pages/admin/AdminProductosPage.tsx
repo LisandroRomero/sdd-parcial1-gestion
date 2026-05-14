@@ -8,8 +8,10 @@ import { useActualizarStock } from '@/features/admin/hooks/useActualizarStock'
 import { useCambiarDisponibilidadAdmin } from '@/features/admin/hooks/useCambiarDisponibilidadAdmin'
 import { useListarCategoriasAdmin } from '@/features/admin/hooks/useListarCategoriasAdmin'
 import type { ProductoRead, ProductoCreate, ProductoUpdate } from '@/entities/producto/types'
-import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
+import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage, NoPermissionMessage } from '@/shared/ui'
 import { Button } from '@/shared/components'
+import { useOffline } from '@/shared/lib/hooks'
+import { getAuthErrorStatus, getErrorMessage } from '@/shared/api'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -289,6 +291,7 @@ export function AdminProductosPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
   const [includeDeleted, setIncludeDeleted] = useState(false)
+  const isOffline = useOffline()
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin-productos', includeDeleted],
@@ -310,8 +313,7 @@ export function AdminProductosPage() {
     crearProducto.mutate(body as ProductoCreate, {
       onSuccess: () => setShowCreate(false),
       onError: (err) => {
-        const msg = err instanceof Error ? err.message : 'Error al crear el producto'
-        setMutationError(msg)
+        setMutationError(getErrorMessage(err))
       },
     })
   }
@@ -324,8 +326,7 @@ export function AdminProductosPage() {
       {
         onSuccess: () => setEditingProducto(null),
         onError: (err) => {
-          const msg = err instanceof Error ? err.message : 'Error al actualizar el producto'
-          setMutationError(msg)
+          setMutationError(getErrorMessage(err))
         },
       },
     )
@@ -362,10 +363,11 @@ export function AdminProductosPage() {
 
   if (isError && !data) {
     return (
-      <ErrorMessage
-        message={error instanceof Error ? error.message : 'Error al cargar los productos'}
-        onRetry={refetch}
-      />
+      getAuthErrorStatus(error) ? (
+        <NoPermissionMessage status={getAuthErrorStatus(error)} />
+      ) : (
+        <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
+      )
     )
   }
 
@@ -389,6 +391,8 @@ export function AdminProductosPage() {
           <span className="text-sm text-gray-700 font-medium">Mostrar eliminados</span>
         </label>
       </div>
+
+      {isOffline && <div className="mb-4"><OfflineMessage /></div>}
 
       {productos.length === 0 ? (
         <EmptyState

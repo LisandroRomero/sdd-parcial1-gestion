@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useCartStore } from '@/shared/lib/stores/cart.store'
 import { useUIStore } from '@/shared/lib/stores/ui.store'
 import { CartItemCard } from './CartItemCard'
 import { CartSummary } from './CartSummary'
 
 export function CartDrawer() {
+  const navigate = useNavigate()
   const activeModal = useUIStore((s) => s.activeModal)
   const closeModal = useUIStore((s) => s.closeModal)
   const items = useCartStore((s) => s.items)
@@ -100,10 +102,13 @@ export function CartDrawer() {
               </div>
               <button
                 type="button"
-                onClick={closeModal}
+                onClick={() => {
+                  closeModal()
+                  navigate('/catalogo')
+                }}
                 className="text-sm font-medium text-primary hover:underline"
               >
-                Ver catálogo →
+                Ir al catálogo →
               </button>
             </div>
           ) : (

@@ -5,8 +5,10 @@ import { listarIngredientesAdmin } from '@/features/admin/api/adminIngredientesA
 import { useActualizarIngrediente } from '@/features/admin/hooks/useActualizarIngrediente'
 import { useEliminarIngrediente } from '@/features/admin/hooks/useEliminarIngrediente'
 import type { IngredienteAdminRead, IngredienteCreate, IngredienteUpdate } from '@/entities/admin/types'
-import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
+import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage, NoPermissionMessage } from '@/shared/ui'
 import { Button } from '@/shared/components'
+import { useOffline } from '@/shared/lib/hooks'
+import { getAuthErrorStatus, getErrorMessage } from '@/shared/api'
 
 // ---------------------------------------------------------------------------
 // Badge
@@ -117,6 +119,7 @@ export function AdminIngredientesPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
   const [includeDeleted, setIncludeDeleted] = useState(false)
+  const isOffline = useOffline()
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin-ingredientes', includeDeleted],
@@ -133,8 +136,7 @@ export function AdminIngredientesPage() {
     crearIngrediente.mutate(body as IngredienteCreate, {
       onSuccess: () => setShowCreate(false),
       onError: (err) => {
-        const msg = err instanceof Error ? err.message : 'Error al crear el ingrediente'
-        setMutationError(msg)
+        setMutationError(getErrorMessage(err))
       },
     })
   }
@@ -147,8 +149,7 @@ export function AdminIngredientesPage() {
       {
         onSuccess: () => setEditingIngrediente(null),
         onError: (err) => {
-          const msg = err instanceof Error ? err.message : 'Error al actualizar el ingrediente'
-          setMutationError(msg)
+          setMutationError(getErrorMessage(err))
         },
       },
     )
@@ -170,10 +171,11 @@ export function AdminIngredientesPage() {
 
   if (isError && !data) {
     return (
-      <ErrorMessage
-        message={error instanceof Error ? error.message : 'Error al cargar los ingredientes'}
-        onRetry={refetch}
-      />
+      getAuthErrorStatus(error) ? (
+        <NoPermissionMessage status={getAuthErrorStatus(error)} />
+      ) : (
+        <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
+      )
     )
   }
 
@@ -192,6 +194,8 @@ export function AdminIngredientesPage() {
           + Nuevo ingrediente
         </Button>
       </div>
+
+      {isOffline && <div className="mb-4"><OfflineMessage /></div>}
 
       <div className="mb-4">
         <label className="inline-flex items-center gap-2 cursor-pointer">

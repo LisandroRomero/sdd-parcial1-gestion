@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useListarFormasPago } from '@/features/admin/hooks/useListarFormasPago'
 import { useToggleFormaPago } from '@/features/admin/hooks/useToggleFormaPago'
 import type { FormaPagoRead } from '@/entities/admin/types'
-import { LoadingSpinner, ErrorMessage, EmptyState } from '@/shared/ui'
+import { LoadingSpinner, ErrorMessage, EmptyState, NoPermissionMessage } from '@/shared/ui'
 import { Button } from '@/shared/components'
+import { getAuthErrorStatus, getErrorMessage } from '@/shared/api'
 
 function EstadoBadge({ activo }: { activo: boolean }) {
   return (
@@ -22,6 +23,7 @@ function EstadoBadge({ activo }: { activo: boolean }) {
 export function AdminConfiguracionPage() {
   const { data, isLoading, isError, error, refetch } = useListarFormasPago()
   const toggleMutation = useToggleFormaPago()
+  const authStatus = isError ? getAuthErrorStatus(error) : undefined
 
   const [togglingCode, setTogglingCode] = useState<string | null>(null)
   const [toggleError, setToggleError] = useState<string | null>(null)
@@ -34,8 +36,7 @@ export function AdminConfiguracionPage() {
       {
         onSettled: () => setTogglingCode(null),
         onError: (err) => {
-          const msg = err instanceof Error ? err.message : 'Error al actualizar'
-          setToggleError(msg)
+          setToggleError(getErrorMessage(err))
         },
       },
     )
@@ -51,10 +52,11 @@ export function AdminConfiguracionPage() {
 
   if (isError && !data) {
     return (
-      <ErrorMessage
-        message={error instanceof Error ? error.message : 'Error al cargar configuración'}
-        onRetry={refetch}
-      />
+      authStatus ? (
+        <NoPermissionMessage status={authStatus} />
+      ) : (
+        <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
+      )
     )
   }
 

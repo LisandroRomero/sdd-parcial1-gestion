@@ -1,11 +1,10 @@
 import { useDirecciones } from '@/features/direcciones'
 import { Card, CardHeader, CardContent } from '@/shared/components'
 import { Button } from '@/shared/components'
-import { ErrorMessage } from '@/shared/ui/ErrorMessage'
-import { EmptyState } from '@/shared/ui/EmptyState'
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner'
+import { ErrorMessage, EmptyState, LoadingSpinner } from '@/shared/ui'
 import { useNavigate } from 'react-router-dom'
 import type { DireccionEntregaRead } from '@/entities/direcciones'
+import { getErrorMessage } from '@/shared/api'
 
 interface AddressSelectorProps {
   selectedId: number | null
@@ -30,7 +29,7 @@ export function AddressSelector({ selectedId, onSelect }: AddressSelectorProps) 
       <Card>
         <CardHeader><h3 className="text-lg font-semibold">Dirección de entrega</h3></CardHeader>
         <CardContent>
-          <ErrorMessage message={error ? (error as Error).message : 'Error al cargar direcciones'} onRetry={refetch} />
+          <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />
         </CardContent>
       </Card>
     )

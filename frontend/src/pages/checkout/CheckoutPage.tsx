@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useCartStore } from '@/shared/lib/stores/cart.store'
 import { useCheckout, CheckoutSummary, AddressSelector, OrderConfirmation } from '@/features/checkout'
 import { Button } from '@/shared/components'
-import { LoadingSpinner } from '@/shared/ui'
-import { EmptyState } from '@/shared/ui'
-import { getErrorMessage } from '@/shared/api'
+import { LoadingSpinner, EmptyState, ErrorMessage, OfflineMessage, NoPermissionMessage } from '@/shared/ui'
+import { getAuthErrorStatus, getErrorMessage } from '@/shared/api'
+import { useOffline } from '@/shared/lib/hooks'
 
 const formatARS = (value: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value)
@@ -15,9 +15,12 @@ export function CheckoutPage() {
   const isCartEmpty = useCartStore((s) => s.isCartEmpty)
   const totalPrice = useCartStore((s) => s.totalPrice)
   const getItemsForCheckout = useCartStore((s) => s.getItemsForCheckout)
+  const isOffline = useOffline()
 
   const [selectedDireccionId, setSelectedDireccionId] = useState<number | null>(null)
   const checkoutMutation = useCheckout()
+
+  const authStatus = checkoutMutation.isError ? getAuthErrorStatus(checkoutMutation.error) : undefined
 
   if (isCartEmpty && !checkoutMutation.isSuccess) {
     return (
@@ -74,25 +77,28 @@ export function CheckoutPage() {
               variant="primary"
               size="lg"
               className="w-full"
-              disabled={!selectedDireccionId || checkoutMutation.isPending}
+              disabled={!selectedDireccionId || checkoutMutation.isPending || isOffline}
               onClick={handleConfirmar}
             >
-              {checkoutMutation.isPending ? 'Creando pedido...' : 'Confirmar pedido'}
+              {isOffline
+                ? 'Sin conexión'
+                : checkoutMutation.isPending
+                  ? 'Creando pedido...'
+                  : 'Confirmar pedido'}
             </Button>
 
             {checkoutMutation.isError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-700">{getErrorMessage(checkoutMutation.error)}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => checkoutMutation.reset()}
-                >
-                  Reintentar
-                </Button>
-              </div>
+              authStatus ? (
+                <NoPermissionMessage status={authStatus} />
+              ) : (
+                <ErrorMessage
+                  message={getErrorMessage(checkoutMutation.error)}
+                  onRetry={() => checkoutMutation.reset()}
+                />
+              )
             )}
+
+            {isOffline && <OfflineMessage />}
           </div>
         </div>
       </div>

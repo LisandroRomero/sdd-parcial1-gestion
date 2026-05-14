@@ -3,6 +3,7 @@ import { ProfileForm } from '@/features/perfil/components/ProfileForm'
 import { DireccionesList } from '@/features/direcciones/components/DireccionesList'
 import { ErrorMessage, EmptyState } from '@/shared/ui'
 import { Card, CardHeader, CardContent } from '@/shared/components/Card'
+import { getErrorMessage } from '@/shared/api'
 
 export function PerfilPage() {
   const { data: perfil, isLoading, isError, error, refetch } = usePerfil()
@@ -41,7 +42,7 @@ export function PerfilPage() {
   if (isError) {
     return (
       <ErrorMessage
-        message={error instanceof Error ? error.message : 'Error al cargar el perfil'}
+        message={getErrorMessage(error)}
         onRetry={refetch}
       />
     )
@@ -52,6 +53,7 @@ export function PerfilPage() {
       <EmptyState
         title="No se pudo cargar el perfil"
         description="No encontramos información de tu perfil. Intentá recargar la página."
+        action={<button className="text-primary underline underline-offset-2" onClick={refetch}>Reintentar</button>}
       />
     )
   }

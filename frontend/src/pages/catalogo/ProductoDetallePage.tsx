@@ -1,8 +1,9 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useProductoDetalle } from '@/features/catalogo'
 import { AddToCartButton } from '@/features/carrito/components/AddToCartButton'
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner'
-import { EmptyState } from '@/shared/ui/EmptyState'
+import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage } from '@/shared/ui'
+import { getErrorMessage } from '@/shared/api'
+import { useOffline } from '@/shared/lib/hooks'
 
 const formatARS = (precio: string) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(
@@ -13,8 +14,9 @@ export function ProductoDetallePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const numericId = id ? parseInt(id, 10) : 0
+  const isOffline = useOffline()
 
-  const { data, isLoading, isError } = useProductoDetalle(numericId)
+  const { data, isLoading, isError, error, refetch } = useProductoDetalle(numericId)
 
   function handleBack() {
     // Go back in history if possible, otherwise go to catalog
@@ -29,21 +31,30 @@ export function ProductoDetallePage() {
     )
   }
 
+  if (isOffline) {
+    return <OfflineMessage className="max-w-xl mx-auto" />
+  }
+
   if (isError || !data) {
     return (
-      <EmptyState
-        icon={<span className="text-5xl">😕</span>}
-        title="Producto no encontrado"
-        description="El producto que buscás no existe o fue removido."
-        action={
-          <Link
-            to="/catalogo"
-            className="text-amber-600 hover:text-amber-700 font-medium underline underline-offset-2"
-          >
-            Volver al catálogo
-          </Link>
-        }
-      />
+      <div className="space-y-4 max-w-xl mx-auto">
+        {isError && <ErrorMessage message={getErrorMessage(error)} onRetry={refetch} />}
+        {!isError && (
+          <EmptyState
+            icon={<span className="text-5xl">😕</span>}
+            title="Producto no encontrado"
+            description="El producto que buscás no existe o fue removido."
+            action={
+              <Link
+                to="/catalogo"
+                className="text-amber-600 hover:text-amber-700 font-medium underline underline-offset-2"
+              >
+                Volver al catálogo
+              </Link>
+            }
+          />
+        )}
+      </div>
     )
   }
 
