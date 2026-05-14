@@ -157,12 +157,17 @@ All endpoints return JSON with consistent structure:
 **Error (4xx/5xx):**
 ```json
 {
-  "statusCode": 400,
-  "message": "Validation failed",
+  "type": "about:blank",
+  "title": "Validation Error",
+  "status": 422,
+  "detail": "Error de validación en los datos enviados",
+  "instance": "/api/v1/auth/register",
+  "requestId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "timestamp": "2026-05-14T12:00:00Z",
+  "code": "VALIDATION_ERROR",
   "errors": [
-    { "field": "email", "message": "Invalid email format" }
-  ],
-  "timestamp": "2026-04-24T10:30:00Z"
+    { "field": "email", "message": "Invalid email format", "code": "invalid_email" }
+  ]
 }
 ```
 

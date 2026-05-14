@@ -11,6 +11,7 @@ import backend.core.models  # noqa: F401 — registers all SQLModel mappers
 from backend.api.v1.router import router as api_v1_router
 from backend.core.config import get_settings
 from backend.core.middleware import (
+    InputSanitizationMiddleware,
     RequestIDMiddleware,
     register_exception_handlers,
 )
@@ -39,6 +40,8 @@ def create_app() -> FastAPI:
     # code (including error responses) gets the ID.
 
     app.add_middleware(RequestIDMiddleware)
+    if settings.sanitize_inputs:
+        app.add_middleware(InputSanitizationMiddleware)
 
     app.add_middleware(
         CORSMiddleware,

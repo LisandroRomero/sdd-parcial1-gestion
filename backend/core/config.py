@@ -52,6 +52,8 @@ class Settings(BaseSettings):
         alias="MERCADOPAGO_WEBHOOK_SECRET",
     )
 
+    sanitize_inputs: bool = Field(default=False, alias="SANITIZE_INPUTS")
+
 
 @lru_cache
 def get_settings() -> Settings:

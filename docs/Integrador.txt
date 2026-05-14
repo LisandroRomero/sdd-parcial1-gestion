@@ -193,7 +193,8 @@ Configuración	Middleware global en app/main.py + decorador @limiter.limit() en 
 5. Especificación de API REST
 Todos los endpoints usan el prefijo /api/v1. Los errores siguen RFC 7807 (Problem Details). La documentación interactiva se genera automáticamente en /docs (Swagger UI) y /redoc.
 Convenciones globales:
-  Error estándar RFC 7807: { "detail": "mensaje", "code": "ERROR_CODE", "field": "campo_opcional" }
+  Error estándar RFC 7807:
+  { "type": "about:blank", "title": "Validation Error", "status": 422, "detail": "Error de validación en los datos enviados", "instance": "/api/v1/auth/register", "requestId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890", "timestamp": "2026-05-14T12:00:00Z", "code": "VALIDATION_ERROR", "errors": [ { "field": "email", "message": "Email inválido", "code": "invalid_email" } ] }
   Paginación: GET /recursos?page=1&size=20 → { "items": [...], "total": N, "page": 1, "size": 20, "pages": P }
   Soft delete: todos los GET filtran WHERE deleted_at IS NULL. Los registros eliminados no son visibles.
 
