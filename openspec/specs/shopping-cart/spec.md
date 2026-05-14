@@ -66,6 +66,7 @@ El store SHALL exponer las siguientes acciones:
 - `updateQuantity(itemId, cantidad)` — actualiza cantidad; si `cantidad <= 0` elimina el ítem
 - `toggleIngrediente(itemId, ingredienteId)` — alterna la presencia de `ingredienteId` en `item.ingredientesExcluidos`
 - `clearCart()` — vacía el carrito completamente
+- `getItemsForCheckout(): DetallePedidoCreate[]` — devuelve los items listos para enviar a `POST /pedidos`, mapeando cada `CartItem` a `{ producto_id: number, cantidad: number }`
 
 El store SHALL usar Zustand `persist` middleware con:
 - `name: 'food-store-cart'`
@@ -137,6 +138,12 @@ El store SHALL usar Zustand `persist` middleware con:
 - **WHEN** la página es recargada
 - **THEN** `items` SHALL contener los mismos items
 - **THEN** `totalItems` y `totalPrice` SHALL recalcularse correctamente desde los items persistidos
+
+#### Scenario: getItemsForCheckout mapea CartItems a DetallePedidoCreate
+
+- **GIVEN** `items = [{ productoId: 1, cantidad: 2 }, { productoId: 3, cantidad: 1 }]`
+- **WHEN** `getItemsForCheckout()` es llamado
+- **THEN** retorna `[{ producto_id: 1, cantidad: 2 }, { producto_id: 3, cantidad: 1 }]`
 
 ---
 
@@ -229,9 +236,14 @@ El componente SHALL mostrar:
 - Cantidad total de ítems (`totalItems`)
 - Precio total (`totalPrice`) formateado como moneda ARS (ej: `$1.500,00`)
 - Botón "Vaciar carrito" que llama a `clearCart()`
-- Botón "Confirmar pedido" (habilitado solo si `!isCartEmpty`) que navega al checkout (ruta futura)
+- Botón "Confirmar pedido" (habilitado solo si `!isCartEmpty`) que navega a `/checkout`
 
 #### Scenario: Precio total formateado en ARS
 
 - **GIVEN** `totalPrice = 1500`
 - **THEN** SHALL mostrarse como `$1.500,00` o similar con separador de miles
+
+#### Scenario: Confirmar pedido navega a checkout
+
+- **WHEN** el usuario hace clic en "Confirmar pedido" con `!isCartEmpty`
+- **THEN** el sistema navega a la ruta `/checkout`

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useCartStore } from '@/shared/lib/stores/cart.store'
 import { Button } from '@/shared/components'
 
@@ -12,6 +13,7 @@ export function CartSummary() {
   const clearCart = useCartStore((s) => s.clearCart)
 
   const [confirmingClear, setConfirmingClear] = useState(false)
+  const navigate = useNavigate()
 
   const handleClearCart = () => {
     if (!confirmingClear) {
@@ -43,9 +45,7 @@ export function CartSummary() {
         variant="primary"
         className="w-full"
         disabled={isCartEmpty}
-        onClick={() => {
-          // TODO Epic 5: navigate to checkout route
-        }}
+        onClick={() => navigate('/checkout')}
       >
         Confirmar pedido
       </Button>

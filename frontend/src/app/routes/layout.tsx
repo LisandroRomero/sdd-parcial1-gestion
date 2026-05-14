@@ -28,7 +28,7 @@ export function Layout() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <h1 className="text-xl font-bold text-gray-900">Food Store</h1>
-            <nav>
+            <nav className="flex items-center gap-4">
               <NavLink
                 to="/catalogo"
                 end={false}
@@ -39,6 +39,17 @@ export function Layout() {
                 }
               >
                 Catálogo
+              </NavLink>
+              <NavLink
+                to="/perfil"
+                end={false}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'text-orange-500 font-semibold text-sm'
+                    : 'text-gray-600 hover:text-gray-900 text-sm transition-colors'
+                }
+              >
+                Mi Perfil
               </NavLink>
             </nav>
           </div>

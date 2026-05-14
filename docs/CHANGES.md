@@ -52,6 +52,9 @@ Notas:
 | 5.1 | order-creation-with-uow | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-order-creation-with-uow/` |
 | 1.7 | frontend-auth-pages | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-auth-pages/` |
 | 2.6 | frontend-product-catalog-page | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-product-catalog-page/` |
+| 3.3 | frontend-profile-and-addresses | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-profile-and-addresses/` |
+| — | fix-direcciones-empty-state-modal | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-fix-direcciones-empty-state-modal/` |
+| 4.2 | frontend-checkout-page | ✅ Hecho (archivado 2026-05-13) | `openspec/changes/archive/2026-05-13-frontend-checkout-page/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -82,15 +85,12 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de | Razón |
 |---:|---|---|---|---|---|
-| 3.3 | frontend-profile-and-addresses | US-024..US-028, US-061, US-062 | Página /perfil: ver/editar nombre+teléfono + gestión de direcciones (agregar, editar, eliminar, marcar principal) | 3.1, 3.2, 1.7 | Sin UI el cliente no puede gestionar su perfil ni sus direcciones |
-
 ---
 
 ## Epic 04 — Carrito (frontend)
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 4.2 | frontend-checkout-page | US-035..US-038 | Página de checkout: resumen del carrito + selector de dirección + botón "Confirmar pedido" → llama POST /pedidos → pantalla de confirmación con número de pedido | 4.1, 5.1, 3.1, 1.7 |
 
 ---
 
