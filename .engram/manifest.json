@@ -360,6 +360,14 @@
       "sessions": 1,
       "memories": 4,
       "prompts": 0
+    },
+    {
+      "id": "fa837489",
+      "created_by": "sebad",
+      "created_at": "2026-05-17T23:10:15Z",
+      "sessions": 1,
+      "memories": 2,
+      "prompts": 4
     }
   ]
 }
