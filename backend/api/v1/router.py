@@ -22,6 +22,7 @@ from backend.auth.router import router as auth_router
 from backend.categorias.router import router as categorias_router
 from backend.direcciones.router import router as direcciones_router
 from backend.ingredientes.router import router as ingredientes_router
+from backend.pagos.router import router as pagos_router
 from backend.pedidos.router import router as pedidos_router
 from backend.productos.router import router as productos_router
 from backend.usuarios.router import router as usuarios_router
@@ -34,6 +35,7 @@ sub_routers = [
     (productos_router, "/productos", "productos"),
     (direcciones_router, "/usuarios/me/direcciones", "direcciones"),
     (pedidos_router, "/pedidos", "pedidos"),
+    (pagos_router, "/pagos", "pagos"),
     (admin_router, "/admin", "admin"),
 ]
 for sub_router, prefix, tag in sub_routers:

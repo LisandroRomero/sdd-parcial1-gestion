@@ -51,6 +51,14 @@ class Settings(BaseSettings):
         default="",
         alias="MERCADOPAGO_WEBHOOK_SECRET",
     )
+    mercadopago_public_key: str = Field(
+        default="",
+        alias="MP_PUBLIC_KEY",
+    )
+    mercadopago_notification_url: str = Field(
+        default="",
+        alias="MP_NOTIFICATION_URL",
+    )
 
     sanitize_inputs: bool = Field(default=False, alias="SANITIZE_INPUTS")
 
