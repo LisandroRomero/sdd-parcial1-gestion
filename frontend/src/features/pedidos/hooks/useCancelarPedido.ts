@@ -33,6 +33,7 @@ export function useCancelarPedido() {
     onSuccess: (_data, { pedidoId }) => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       queryClient.invalidateQueries({ queryKey: ['pedido', pedidoId] })
+      queryClient.invalidateQueries({ queryKey: ['pedidos-admin'] })
     },
     onError: (error) => {
       const errorCode = (error as { response?: { data?: { error_code?: string } } })?.response?.data?.error_code

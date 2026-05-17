@@ -8,6 +8,9 @@ export function useAvanzarEstado(pedidoId: number) {
     mutationFn: (data: AvanzarEstadoRequest) => avanzarEstado(pedidoId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedido', pedidoId] })
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      queryClient.invalidateQueries({ queryKey: ['pedidos-admin'] })
+      queryClient.invalidateQueries({ queryKey: ['pedido-admin', pedidoId] })
     },
   })
 }

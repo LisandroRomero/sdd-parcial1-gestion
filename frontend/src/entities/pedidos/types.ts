@@ -80,6 +80,12 @@ export interface PedidoListRead {
   pages: number
 }
 
+/** Sort field for order listing. */
+export type SortField = 'id' | 'total' | 'created_at'
+
+/** Sort direction for order listing. */
+export type SortOrder = 'asc' | 'desc'
+
 /** Parameters for listing orders with pagination and filters. */
 export interface ListarPedidosParams {
   estado?: string
@@ -88,4 +94,13 @@ export interface ListarPedidosParams {
   page?: number
   size?: number
   buscar?: string
+  sort_by?: SortField
+  sort_order?: SortOrder
+}
+
+/** Parameters for admin order listing — includes user_id filter + sort. */
+export interface ListarPedidosAdminParams extends ListarPedidosParams {
+  usuario_id?: number
+  sort_by?: SortField
+  sort_order?: SortOrder
 }

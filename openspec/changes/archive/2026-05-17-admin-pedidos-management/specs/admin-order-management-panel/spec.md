@@ -27,6 +27,8 @@ El sistema SHALL mostrar en `AdminPedidoDetailPage` un selector de estado destin
 - **WHEN** un ADMIN está en el detalle admin de un pedido en estado CONFIRMADO
 - **THEN** el selector muestra ["En preparación", "Cancelado"] como opciones disponibles
 
+## MODIFIED Requirements
+
 ### Requirement: Ruta `/admin/pedidos` para gestión de pedidos
 
 El sistema SHALL proveer la ruta `/admin/pedidos` accesible exclusivamente bajo `AdminRoute` (rol ADMIN) que muestra la **tabla de gestión de pedidos de `AdminPedidosPage`** con todos los pedidos del sistema, filtros avanzados y acciones rápidas.
@@ -41,7 +43,7 @@ El sistema SHALL proveer la ruta `/admin/pedidos` accesible exclusivamente bajo 
 - **WHEN** un usuario sin rol ADMIN intenta navegar a `/admin/pedidos`
 - **THEN** el sistema redirige al inicio o muestra acceso denegado
 
-### Requirement: Selector de estado destino en detalle admin
+### Requirement: Botón "Avanzar estado" en detalle de pedido para gestores
 
 El sistema SHALL mostrar un **selector de estado destino con confirmación** en `AdminPedidoDetailPage` cuando el usuario autenticado tiene rol GESTOR_PEDIDOS o ADMIN y el pedido tiene estados destino válidos en la FSM. El selector SHALL listar SOLO los estados destino válidos (no todos los estados del sistema). Al confirmar, SHALL invocar `PATCH /api/v1/pedidos/{id}/estado` con el estado seleccionado.
 

@@ -1,68 +1,52 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getPedido } from '@/entities/pedidos'
-import { statusColors, statusLabels, getNextState } from '@/entities/pedidos/constants'
+import { statusColors, statusLabels } from '@/entities/pedidos/constants'
 import { OrderTimeline } from '@/entities/pedidos/ui/OrderTimeline'
 import { canCancel, useCancelarPedido, CancelarPedidoModal } from '@/features/pedidos'
 import { useAvanzarEstado } from '@/features/pedidos/hooks/useAvanzarEstado'
-import { useAuthStore } from '@/shared/lib/stores/auth.store'
 import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage } from '@/shared/ui'
 import { Button, Card, CardHeader, CardContent } from '@/shared/components'
 import { getErrorMessage } from '@/shared/api'
 import { useOffline } from '@/shared/lib/hooks'
 
+const ADMIN_TRANSITIONS: Record<string, string[]> = {
+  PENDIENTE: ['CONFIRMADO', 'CANCELADO'],
+  CONFIRMADO: ['EN_PREP', 'CANCELADO'],
+  EN_PREP: ['EN_CAMINO', 'CANCELADO'],
+  EN_CAMINO: ['ENTREGADO'],
+  ENTREGADO: [],
+  CANCELADO: [],
+}
+
 const formatARS = (value: string) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(value))
-
-const PAYMENT_LABELS: Record<string, string> = {
-  TARJETA: 'Tarjeta',
-  RAPIPAGO: 'Rapipago',
-  PAGO_FACIL: 'Pago Fácil',
-}
-
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-  approved: 'Aprobado',
-  rejected: 'Rechazado',
-  in_process: 'En proceso',
-  pending: 'Pendiente',
-}
 
 const formatDate = (dateString: string) =>
   new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(dateString))
 
-function usePedido(id: number) {
-  return useQuery({
-    queryKey: ['pedido', id],
-    queryFn: () => getPedido(id),
-    enabled: !!id,
-    refetchInterval: 30000,
-  })
-}
+const PAYMENT_LABELS: Record<string, string> = { TARJETA: 'Tarjeta', RAPIPAGO: 'Rapipago', PAGO_FACIL: 'Pago Fácil' }
+const PAYMENT_STATUS_LABELS: Record<string, string> = { approved: 'Aprobado', rejected: 'Rechazado', in_process: 'En proceso', pending: 'Pendiente' }
 
-export function PedidoDetailPage() {
+export function AdminPedidoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const numericId = id ? parseInt(id, 10) : 0
-  const user = useAuthStore((s) => s.user)
+  const queryClient = useQueryClient()
   const isOffline = useOffline()
+  const [targetState, setTargetState] = useState<string>('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const { data: pedido, isLoading, isError, error, refetch } = usePedido(numericId)
+  const { data: pedido, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['pedido-admin', numericId],
+    queryFn: () => getPedido(numericId),
+    enabled: !!numericId,
+    refetchInterval: 30000,
+  })
+
   const cancelMutation = useCancelarPedido()
   const avanzarMutation = useAvanzarEstado(numericId)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isCancelling, setIsCancelling] = useState(false)
 
-  useEffect(() => {
-    if (cancelMutation.isPending) return
-    if (cancelMutation.isError) {
-      const err = cancelMutation.error as { response?: { data?: { error_code?: string } } }
-      if (err?.response?.data?.error_code === 'PEDIDO_ESTADO_TERMINAL') {
-        refetch()
-      }
-    }
-  }, [cancelMutation.isPending, cancelMutation.isError, cancelMutation.error, refetch])
-
-  const roles = user?.roles ?? []
   const is404 = isError && (error as { response?: { status?: number } })?.response?.status === 404
 
   if (isLoading) {
@@ -100,8 +84,13 @@ export function PedidoDetailPage() {
     )
   }
 
-  const showCancelButton = canCancel(pedido.estado_actual, roles)
-  const nextState = getNextState(pedido.estado_actual, roles)
+  const transitions = ADMIN_TRANSITIONS[pedido.estado_actual] ?? []
+  const showCancelButton = canCancel(pedido.estado_actual, ['ADMIN'])
+
+  function handleAvanzar() {
+    if (!targetState) return
+    avanzarMutation.mutate({ nuevo_estado: targetState })
+  }
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
@@ -139,6 +128,10 @@ export function PedidoDetailPage() {
               <p className="font-medium text-gray-900">
                 {statusLabels[pedido.estado_actual] ?? pedido.estado_actual}
               </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Usuario ID</p>
+              <p className="font-medium text-gray-900">{pedido.usuario_id}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Total</p>
@@ -235,22 +228,34 @@ export function PedidoDetailPage() {
         </CardContent>
       </Card>
 
-      {(nextState || showCancelButton) && (
-        <div className="flex flex-col gap-2 items-end">
-          {nextState && (
-            <div>
+      {(transitions.length > 0 || showCancelButton) && (
+        <div className="flex flex-col gap-4 items-end">
+          {transitions.length > 0 && (
+            <div className="flex items-center gap-3">
+              <select
+                value={targetState}
+                onChange={(e) => setTargetState(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Seleccionar estado…</option>
+                {transitions.map((estado) => (
+                  <option key={estado} value={estado}>
+                    {statusLabels[estado] ?? estado}
+                  </option>
+                ))}
+              </select>
               <Button
                 variant="primary"
-                onClick={() => avanzarMutation.mutate({ nuevo_estado: nextState })}
-                disabled={avanzarMutation.isPending}
+                onClick={handleAvanzar}
+                disabled={!targetState || avanzarMutation.isPending}
               >
-              {avanzarMutation.isPending ? 'Avanzando...' : `Avanzar a ${statusLabels[nextState] ?? nextState}`}
+                {avanzarMutation.isPending ? 'Avanzando...' : 'Avanzar'}
               </Button>
               {avanzarMutation.isError && (
                 <ErrorMessage
                   compact
                   message={getErrorMessage(avanzarMutation.error)}
-                  onRetry={() => avanzarMutation.mutate({ nuevo_estado: nextState })}
+                  onRetry={handleAvanzar}
                   className="mt-2"
                 />
               )}
@@ -261,9 +266,9 @@ export function PedidoDetailPage() {
               variant="primary"
               className="bg-red-600 text-white hover:bg-red-700"
               onClick={() => setIsModalOpen(true)}
-              disabled={isCancelling}
+              disabled={cancelMutation.isPending}
             >
-              {isCancelling ? 'Cancelando...' : 'Cancelar pedido'}
+              {cancelMutation.isPending ? 'Cancelando...' : 'Cancelar pedido'}
             </Button>
           )}
         </div>
@@ -276,7 +281,6 @@ export function PedidoDetailPage() {
           setIsModalOpen(false)
           refetch()
         }}
-        onMutationChange={setIsCancelling}
       />
     </div>
   )

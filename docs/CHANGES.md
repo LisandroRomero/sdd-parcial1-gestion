@@ -4,7 +4,7 @@
 >
 > Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-**Última actualización:** 2026-05-14
+**Última actualización:** 2026-05-17
 
 ---
 
@@ -70,6 +70,8 @@ Notas:
 | 8.1 | error-handling-standardized | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-error-handling-standardized/` |
 | 8.3 | frontend-error-and-empty-states | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-error-and-empty-states/` |
 | — | frontend-sidebar-navigation | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-sidebar-navigation/` |
+
+| — | admin-pedidos-management | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-admin-pedidos-management/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 

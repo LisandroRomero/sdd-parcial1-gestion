@@ -21,5 +21,6 @@ export function useListarPedidos({ params = {} }: UseListarPedidosOptions = {}) 
         buscar: buscar || undefined,
       }),
     placeholderData: keepPreviousData,
+    refetchInterval: 30000,
   })
 }
