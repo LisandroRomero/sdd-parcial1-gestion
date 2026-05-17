@@ -12,6 +12,11 @@ Siempre que se trabaje en el repo (investigar, analizar, escribir código, refac
 - Únicas excepciones permitidas: preguntas de clarificación al usuario y comandos mínimos de “estado” (p.ej. `openspec status/list`, `git status/diff/log`) para entender el contexto antes de delegar.
 - Solo el oquestador puede delegar subagentes, si estas delegado por el orcquestador DEBES hacer la tarea y no volver a delegarla.
 
+## Regla sobre uso de instsaladores (MANDATORIA): usar pnpm
+
+Siempre que necesites utilizar una dependencia que no se encuentra instalada y debes instalarla, tienes prohibido el uso de npm para realizar las instalaciones de librerias e dependencia.
+Debes utilizar pnpm para todas las instalaciones de librerias/dependencias/cualquier cosa que necesites. Esto debes respetarlos siempre.
+
 ## Proyecto
 
 **Food Store** es una plataforma e-commerce full-stack para gestión de pedidos de comida.
