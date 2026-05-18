@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { listarPedidos, avanzarEstado } from '@/entities/pedidos'
-import { statusColors, statusLabels, getNextState } from '@/entities/pedidos/constants'
+import { statusColors, statusLabels, getAdminNextStates } from '@/entities/pedidos/constants'
 import type { ListarPedidosParams } from '@/entities/pedidos'
 import { CancelarPedidoModal } from '@/features/pedidos'
 import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage, NoPermissionMessage } from '@/shared/ui'
@@ -57,6 +57,7 @@ export function AdminPedidosPage() {
   // UI state
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null)
   const [advancingRowId, setAdvancingRowId] = useState<number | null>(null)
+  const [advanceTarget, setAdvanceTarget] = useState<Record<number, string>>({})
   const [cancelPedidoId, setCancelPedidoId] = useState<number | null>(null)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
@@ -95,6 +96,7 @@ export function AdminPedidosPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos-admin'] })
       setAdvancingRowId(null)
+      setAdvanceTarget({})
     },
   })
 
@@ -263,7 +265,7 @@ export function AdminPedidosPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {pedidos.map((pedido) => {
-                const nextState = getNextState(pedido.estado_actual, ['ADMIN'])
+                const nextStates = getAdminNextStates(pedido.estado_actual, ['ADMIN'])
 
                 return (
                   <tr key={pedido.id} className="hover:bg-gray-50 transition-colors">
@@ -313,7 +315,7 @@ export function AdminPedidosPage() {
                               Ver detalle
                             </button>
 
-                            {nextState && (
+                            {nextStates.length > 0 && (
                               <button
                                 onClick={() => {
                                   setOpenDropdownId(null)
@@ -349,43 +351,64 @@ export function AdminPedidosPage() {
                 (() => {
                   const pedido = pedidos.find((p) => p.id === advancingRowId)
                   if (!pedido) return null
-                  const nextState = getNextState(pedido.estado_actual, ['ADMIN'])
-                  if (!nextState) return null
+                  const nextStates = getAdminNextStates(pedido.estado_actual, ['ADMIN'])
+                  if (nextStates.length === 0) return null
+                  const selectedTarget = advanceTarget[pedido.id] ?? nextStates[0]
 
                   return (
                     <tr key={`advance-${pedido.id}`}>
                       <td colSpan={7} className="px-4 py-3 bg-blue-50">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-gray-700">
-                            Avanzar pedido{' '}
-                            <span className="font-semibold">#{pedido.id}</span> de{' '}
-                            <span className="font-medium">
-                              {statusLabels[pedido.estado_actual]}
-                            </span>{' '}
-                            →{' '}
-                            <span className="font-medium">{statusLabels[nextState]}</span>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                          <span className="text-sm text-gray-700 whitespace-nowrap">
+                            Pedido <span className="font-semibold">#{pedido.id}</span>:
                           </span>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            disabled={advanceMutation.isPending}
-                            onClick={() =>
-                              advanceMutation.mutate({
-                                pedidoId: pedido.id,
-                                nuevoEstado: nextState,
-                              })
-                            }
+                          <span className="text-sm text-gray-500">
+                            {statusLabels[pedido.estado_actual]}
+                          </span>
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          <select
+                            value={selectedTarget}
+                            onChange={(e) => setAdvanceTarget(prev => ({ ...prev, [pedido.id]: e.target.value }))}
+                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                           >
-                            {advanceMutation.isPending ? 'Avanzando…' : 'Confirmar'}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={advanceMutation.isPending}
-                            onClick={() => setAdvancingRowId(null)}
-                          >
-                            Cancelar
-                          </Button>
+                            {nextStates.map((estado) => (
+                              <option key={estado} value={estado}>
+                                {statusLabels[estado] ?? estado}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              disabled={advanceMutation.isPending}
+                              onClick={() =>
+                                advanceMutation.mutate({
+                                  pedidoId: pedido.id,
+                                  nuevoEstado: selectedTarget,
+                                })
+                              }
+                            >
+                              {advanceMutation.isPending ? 'Avanzando…' : 'Confirmar'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={advanceMutation.isPending}
+                              onClick={() => {
+                                setAdvancingRowId(null)
+                                setAdvanceTarget(prev => {
+                                  const copy = { ...prev }
+                                  delete copy[pedido.id]
+                                  return copy
+                                })
+                              }}
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
                         </div>
                       </td>
                     </tr>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getPedido } from '@/entities/pedidos'
-import { statusColors, statusLabels } from '@/entities/pedidos/constants'
+import { statusColors, statusLabels, getAdminNextStates } from '@/entities/pedidos/constants'
 import { OrderTimeline } from '@/entities/pedidos/ui/OrderTimeline'
 import { canCancel, useCancelarPedido, CancelarPedidoModal } from '@/features/pedidos'
 import { useAvanzarEstado } from '@/features/pedidos/hooks/useAvanzarEstado'
@@ -10,15 +10,6 @@ import { LoadingSpinner, ErrorMessage, EmptyState, OfflineMessage } from '@/shar
 import { Button, Card, CardHeader, CardContent } from '@/shared/components'
 import { getErrorMessage } from '@/shared/api'
 import { useOffline } from '@/shared/lib/hooks'
-
-const ADMIN_TRANSITIONS: Record<string, string[]> = {
-  PENDIENTE: ['CONFIRMADO', 'CANCELADO'],
-  CONFIRMADO: ['EN_PREP', 'CANCELADO'],
-  EN_PREP: ['EN_CAMINO', 'CANCELADO'],
-  EN_CAMINO: ['ENTREGADO'],
-  ENTREGADO: [],
-  CANCELADO: [],
-}
 
 const formatARS = (value: string) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(value))
@@ -84,7 +75,7 @@ export function AdminPedidoDetailPage() {
     )
   }
 
-  const transitions = ADMIN_TRANSITIONS[pedido.estado_actual] ?? []
+  const transitions = getAdminNextStates(pedido.estado_actual, ['ADMIN'])
   const showCancelButton = canCancel(pedido.estado_actual, ['ADMIN'])
 
   function handleAvanzar() {

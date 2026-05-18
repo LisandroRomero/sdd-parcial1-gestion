@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getPedido } from '@/entities/pedidos'
-import { statusColors, statusLabels, getNextState } from '@/entities/pedidos/constants'
+import { statusColors, statusLabels, getAdminNextStates } from '@/entities/pedidos/constants'
 import { OrderTimeline } from '@/entities/pedidos/ui/OrderTimeline'
 import { canCancel, useCancelarPedido, CancelarPedidoModal } from '@/features/pedidos'
 import { useAvanzarEstado } from '@/features/pedidos/hooks/useAvanzarEstado'
@@ -101,7 +101,7 @@ export function PedidoDetailPage() {
   }
 
   const showCancelButton = canCancel(pedido.estado_actual, roles)
-  const nextState = getNextState(pedido.estado_actual, roles)
+  const nextStates = getAdminNextStates(pedido.estado_actual, roles)
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
@@ -235,22 +235,22 @@ export function PedidoDetailPage() {
         </CardContent>
       </Card>
 
-      {(nextState || showCancelButton) && (
+      {(nextStates.length > 0 || showCancelButton) && (
         <div className="flex flex-col gap-2 items-end">
-          {nextState && (
+          {nextStates.length > 0 && (
             <div>
               <Button
                 variant="primary"
-                onClick={() => avanzarMutation.mutate({ nuevo_estado: nextState })}
+                onClick={() => avanzarMutation.mutate({ nuevo_estado: nextStates[0] })}
                 disabled={avanzarMutation.isPending}
               >
-              {avanzarMutation.isPending ? 'Avanzando...' : `Avanzar a ${statusLabels[nextState] ?? nextState}`}
+              {avanzarMutation.isPending ? 'Avanzando...' : `Avanzar a ${statusLabels[nextStates[0]] ?? nextStates[0]}`}
               </Button>
               {avanzarMutation.isError && (
                 <ErrorMessage
                   compact
                   message={getErrorMessage(avanzarMutation.error)}
-                  onRetry={() => avanzarMutation.mutate({ nuevo_estado: nextState })}
+                  onRetry={() => avanzarMutation.mutate({ nuevo_estado: nextStates[0] })}
                   className="mt-2"
                 />
               )}

@@ -16,14 +16,17 @@ export const statusLabels: Record<string, string> = {
   CANCELADO: 'Cancelado',
 }
 
-const FSM_TRANSITIONS: Record<string, string> = {
-  CONFIRMADO: 'EN_PREP',
-  EN_PREP: 'EN_CAMINO',
-  EN_CAMINO: 'ENTREGADO',
+export const ADMIN_TRANSITIONS: Record<string, string[]> = {
+  PENDIENTE: ['CONFIRMADO', 'CANCELADO'],
+  CONFIRMADO: ['EN_PREP', 'CANCELADO'],
+  EN_PREP: ['EN_CAMINO', 'CANCELADO'],
+  EN_CAMINO: ['ENTREGADO'],
+  ENTREGADO: [],
+  CANCELADO: [],
 }
 
-export function getNextState(currentState: string, roles: string[]): string | null {
+export function getAdminNextStates(currentState: string, roles: string[]): string[] {
   const canAdvance = roles.includes('ADMIN') || roles.includes('PEDIDOS')
-  if (!canAdvance) return null
-  return FSM_TRANSITIONS[currentState] ?? null
+  if (!canAdvance) return []
+  return ADMIN_TRANSITIONS[currentState] ?? []
 }

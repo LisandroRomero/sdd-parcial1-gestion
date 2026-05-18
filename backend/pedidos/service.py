@@ -18,19 +18,19 @@ from backend.usuarios.model import Usuario
 # Roles: "CLIENT", "ADMIN", "PEDIDOS", "SISTEMA" (reservado para webhooks)
 TRANSICIONES_VALIDAS: dict[str, dict[str, set[str]]] = {
     "PENDIENTE": {
-        "CONFIRMADO": {"SISTEMA"},        # Webhook MP — pago aprobado
+        "CONFIRMADO": {"SISTEMA", "ADMIN"},        # Webhook MP — pago aprobado
         "CANCELADO": {"CLIENT", "ADMIN", "PEDIDOS"},
     },
     "CONFIRMADO": {
-        "EN_PREP": {"PEDIDOS"},
+        "EN_PREP": {"PEDIDOS", "ADMIN"},
         "CANCELADO": {"ADMIN", "PEDIDOS"},
     },
     "EN_PREP": {
-        "EN_CAMINO": {"PEDIDOS"},
+        "EN_CAMINO": {"PEDIDOS", "ADMIN"},
         "CANCELADO": {"ADMIN"},           # Solo ADMIN puede cancelar desde preparación
     },
     "EN_CAMINO": {
-        "ENTREGADO": {"PEDIDOS"},
+        "ENTREGADO": {"PEDIDOS", "ADMIN"},
     },
 }
 
