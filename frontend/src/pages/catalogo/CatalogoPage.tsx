@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
+import { ShoppingBag } from 'lucide-react'
 import type { ProductoFiltros } from '@/entities/producto'
 import { useProductos } from '@/features/catalogo'
 import { ProductGrid, CatalogFilters, CatalogPagination } from '@/features/catalogo'
@@ -55,13 +56,18 @@ export function CatalogoPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Catálogo</h1>
-        {data && (
-          <p className="text-sm text-gray-500 mt-1">
-            {data.total} {data.total === 1 ? 'producto' : 'productos'} encontrados
-          </p>
-        )}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white">
+          <ShoppingBag size={20} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Catálogo</h1>
+          {data && (
+            <p className="text-sm text-gray-500">
+              {data.total} {data.total === 1 ? 'producto' : 'productos'} disponibles
+            </p>
+          )}
+        </div>
       </div>
 
       {isOffline && (

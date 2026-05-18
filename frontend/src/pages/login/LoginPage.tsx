@@ -87,8 +87,12 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      <div className="flex flex-col items-center">
+        <div className="mb-6 text-center">
+          <span className="text-4xl">🍕</span>
+        </div>
+        <Card className="w-full max-w-md p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Iniciar sesión</h1>
 
         <form onSubmit={handleSubmit} noValidate>
@@ -126,7 +130,7 @@ export function LoginPage() {
 
           <Button
             type="submit"
-            className="w-full mt-6 bg-orange-500 hover:bg-orange-600 focus:ring-orange-500"
+            className="w-full mt-6 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 focus:ring-orange-500 text-white font-medium"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
@@ -135,11 +139,12 @@ export function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           ¿No tenés cuenta?{' '}
-          <Link to="/register" className="text-orange-500 hover:text-orange-600 font-medium">
+          <Link to="/register" className="text-primary hover:text-primary-dark font-medium">
             Registrate
           </Link>
         </p>
       </Card>
+      </div>
     </div>
   )
 }

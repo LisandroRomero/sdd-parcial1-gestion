@@ -35,7 +35,7 @@ export function Layout() {
   }
 
   return (
-    <div className="h-screen bg-gray-50">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-amber-50/30">
       <Sidebar
         collapsed={!sidebarOpen}
         onToggle={toggleSidebar}
@@ -46,9 +46,12 @@ export function Layout() {
           sidebarOpen ? 'md:ml-64' : 'md:ml-16'
         }`}
       >
-        <header className="bg-white shadow-sm flex-shrink-0">
+        <header className="bg-white shadow-sm flex-shrink-0 border-b-2 border-primary/10">
           <div className="flex items-center justify-between px-4 h-16">
             <div className="flex items-center gap-3">
+              <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent hidden sm:block">
+                Food Store
+              </span>
               <button
                 onClick={() => setDrawerOpen(true)}
                 className="md:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
@@ -60,7 +63,7 @@ export function Layout() {
             <div className="flex items-center gap-4">
               {isAuthenticated && user && (
                 <span className="text-sm text-gray-600 hidden sm:block">
-                  Hola, <span className="font-medium">{user.nombre}</span>
+                  Hola, <span className="font-medium text-gray-800">{user.nombre}</span>
                 </span>
               )}
               {isAuthenticated && (

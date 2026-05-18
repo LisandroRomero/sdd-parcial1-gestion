@@ -11,12 +11,12 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle, sections }: SidebarProps) {
   return (
     <aside
-      className={`max-md:hidden fixed top-0 left-0 z-40 flex flex-col bg-white h-screen transition-all duration-200 ${
+      className={`max-md:hidden fixed top-0 left-0 z-40 flex flex-col bg-gradient-to-b from-white to-gray-50 h-screen transition-all duration-200 ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
       <div className="flex items-center justify-between px-4 h-16">
-        <h1 className="text-lg font-bold text-gray-900">
+        <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           {collapsed ? 'FS' : 'Food Store'}
         </h1>
         <button
