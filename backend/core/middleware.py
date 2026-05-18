@@ -5,12 +5,17 @@ import re
 import uuid
 from datetime import datetime, timezone
 
+import http.client
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+
+
+def _status_title(status_code: int) -> str:
+    return http.client.responses.get(status_code, "Error")
 
 from backend.core.exceptions import AppException
 
@@ -84,7 +89,7 @@ def _build_problem_detail(
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     if isinstance(exc, AppException):
         status_code = exc.status_code
-        title = status.HTTP_STATUS_CODES.get(status_code, "Error")
+        title = _status_title(status_code)
         payload = _build_problem_detail(
             request=request,
             status_code=status_code,
@@ -246,7 +251,7 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
         payload = _build_problem_detail(
             request=request,
             status_code=400,
-            title=status.HTTP_STATUS_CODES.get(400, "Bad Request"),
+            title=_status_title(400),
             detail="Input sanitization failed",
             code="INPUT_SANITIZATION",
         )
