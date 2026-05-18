@@ -74,6 +74,7 @@ Notas:
 | — | admin-pedidos-management | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-admin-pedidos-management/` |
 | — | admin-pedidos-fix-acciones | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-admin-pedidos-fix-acciones/` |
 | 6.1 | mercadopago-payment-creation | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-mercadopago-payment-creation/` |
+| 6.2 | mercadopago-webhook-processing | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-mercadopago-webhook-processing/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -124,7 +125,6 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 6.2 | mercadopago-webhook-processing | US-046, US-047 | POST /pagos/webhook: firma + topic=payment + actualizar estado + avanzar pedido + stock atómico | 6.1, 5.2 |
 | 6.3 | payment-retry-and-status | US-048 | 1:N pagos por pedido + GET /pagos/{pedido_id} + reintentos | 6.1, 6.2 |
 | 6.4 | frontend-payment-checkout | US-045, US-048 | Checkout FE con SDK MP + tokenización tarjeta en browser (RN-AU09) + polling estado + UI approved/rejected/pending | 6.1, 4.2, 0.5 |
 

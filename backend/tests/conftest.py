@@ -12,6 +12,7 @@ from sqlmodel import Session, SQLModel, create_engine
 os.environ.setdefault("DATABASE_URL", "sqlite://")
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
 os.environ.setdefault("MERCADOPAGO_ACCESS_TOKEN", "test-mp-token")
+os.environ.setdefault("MERCADOPAGO_WEBHOOK_SECRET", "test-webhook-secret")
 
 from backend.core.security import create_access_token, hash_password
 from backend.main import create_app

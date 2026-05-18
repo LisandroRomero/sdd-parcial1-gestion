@@ -1,19 +1,22 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Generator
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from sqlmodel import Session
 
 from backend.core.database import engine
 from backend.core.dependencies import get_current_user, require_role
-from backend.core.exceptions import AppException
+from backend.core.exceptions import AppException, UnauthorizedException
 from backend.core.uow import UnitOfWork
 from backend.pagos import service as pago_service
 from backend.pagos.repository import PagoRepository
 from backend.pagos.schemas import CrearPagoRequest, PagoResponse
 from backend.pedidos.repository import PedidoRepository
 from backend.usuarios.model import Usuario
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -71,3 +74,47 @@ def crear_pago(
     pago = pago_service.crear_pago(uow, body, current_user)
     uow.commit()
     return PagoResponse.model_validate(pago)
+
+
+@router.post(
+    "/webhook",
+    status_code=status.HTTP_200_OK,
+    summary="Receive MercadoPago IPN webhook notifications",
+    description=(
+        "Public endpoint that receives IPN notifications from MercadoPago. "
+        "Validates the X-Signature HMAC-SHA256, processes payment status "
+        "updates, and advances the order FSM when a payment is approved. "
+        "Always returns 200 to MercadoPago except on signature validation "
+        "failure (401)."
+    ),
+)
+async def webhook(
+    request: Request,
+    uow: UnitOfWork = Depends(_get_uow),
+) -> Response:
+    """Process an incoming IPN webhook from MercadoPago.
+
+    * Reads the raw body (before Pydantic parsing) for HMAC validation.
+    * Validates ``X-Signature`` — returns 401 on mismatch.
+    * Delegates to ``procesar_webhook`` for idempotent processing.
+    * Returns 200 in all other cases to avoid unnecessary MP retries.
+    """
+    raw_body = await request.body()
+    x_signature = request.headers.get("X-Signature", "")
+
+    # ── Validate X-Signature ────────────────────────────────────────
+    if not pago_service.validar_firma_webhook(raw_body, x_signature):
+        raise UnauthorizedException(
+            "PAGO_WEBHOOK_FIRMA_INVALIDA: X-Signature no válida"
+        )
+
+    # ── Process ─────────────────────────────────────────────────────
+    try:
+        pago_service.procesar_webhook(uow, raw_body, x_signature)
+        uow.commit()
+    except Exception as exc:
+        # Log and absorb — return 200 to avoid MP retry storms for
+        # non-recoverable errors.
+        logger.warning("Webhook processing error (absorbed): %s", exc)
+
+    return Response(status_code=200)

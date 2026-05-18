@@ -171,14 +171,19 @@ def avanzar_estado(
     uow: UnitOfWork,
     pedido_id: int,
     nuevo_estado: str,
-    usuario_actual: Usuario,
+    usuario_actual: Usuario | None = None,
 ) -> Pedido:
     """Advance an order to a new state after validating the FSM transition.
+
+    When ``usuario_actual`` is ``None`` (system-originated transition,
+    e.g. webhook), the function:
+    - Validates the transition with the ``"SISTEMA"`` role.
+    - Records ``usuario_id=NULL`` in the history entry.
 
     Flow:
     1. Load pedido (404 if not found).
     2. Validate transition + role.
-    3. Insert HistorialEstadoPedido entry.
+    3. Insert HistorialEstadoPedido entry (``usuario_id=NULL`` if system).
     4. Update pedido.estado_actual.
     5. Return refreshed pedido.
     """
@@ -186,7 +191,14 @@ def avanzar_estado(
     if pedido is None:
         raise NotFoundException("PEDIDO_NOT_FOUND")
 
-    user_roles = {ur.rol_codigo for ur in usuario_actual.roles}
+    # ── Resolve roles ──────────────────────────────────────────────
+    if usuario_actual is None:
+        # System-originated transition (e.g. webhook)
+        user_roles: set[str] = {"SISTEMA"}
+        usuario_id: int | None = None
+    else:
+        user_roles = {ur.rol_codigo for ur in usuario_actual.roles}
+        usuario_id = usuario_actual.id
 
     _validar_transicion(pedido.estado_actual, nuevo_estado, user_roles)
 
@@ -195,7 +207,7 @@ def avanzar_estado(
         pedido_id=pedido.id,
         estado_desde=pedido.estado_actual,
         estado_hasta=nuevo_estado,
-        usuario_id=usuario_actual.id,
+        usuario_id=usuario_id,
         motivo=None,  # Sin motivo en avance normal
     )
     uow.session.add(historial)
