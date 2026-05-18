@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+import os
+import sys
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
+
+# Ensure the project root is on sys.path so "from backend.core.config" works
+# regardless of whether we run from backend/ or the project root.
+# env.py lives in backend/alembic/, so we go up 3 levels to reach the project root.
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from backend.core.config import get_settings
 

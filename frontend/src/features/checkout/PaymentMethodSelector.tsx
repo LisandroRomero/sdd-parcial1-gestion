@@ -9,7 +9,7 @@ interface PaymentMethodSelectorProps {
 
 export function PaymentMethodSelector({ selected, onSelect }: PaymentMethodSelectorProps) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['formas-pago'],
+    queryKey: ['formas-pago', 'public'],
     queryFn: getFormasPago,
     staleTime: 5 * 60 * 1000,
   })

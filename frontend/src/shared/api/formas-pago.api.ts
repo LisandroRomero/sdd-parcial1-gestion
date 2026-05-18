@@ -7,6 +7,6 @@ export interface FormaPagoRead {
 }
 
 export async function getFormasPago(): Promise<FormaPagoRead[]> {
-  const { data } = await api.get<FormaPagoRead[]>('/pagos/formas-pago')
+  const { data } = await api.get<FormaPagoRead[]>('/pagos/formas-pago/')
   return data
 }

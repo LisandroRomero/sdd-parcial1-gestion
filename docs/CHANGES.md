@@ -4,7 +4,7 @@
 >
 > Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-**Última actualización:** 2026-05-17
+**Última actualización:** 2026-05-18
 
 ---
 
@@ -76,6 +76,7 @@ Notas:
 | 6.1 | mercadopago-payment-creation | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-mercadopago-payment-creation/` |
 | 6.2 | mercadopago-webhook-processing | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-mercadopago-webhook-processing/` |
 | 6.3 | payment-retry-and-status | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-payment-retry-and-status/` |
+| 6.4 | frontend-payment-checkout | ✅ Hecho (archivado 2026-05-18) | `openspec/changes/archive/2026-05-17-frontend-payment-checkout/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 
@@ -126,7 +127,7 @@ Notas:
 
 | ID | Change | Historias | Funcionalidad | Depende de |
 |---:|---|---|---|---|
-| 6.4 | frontend-payment-checkout | US-045, US-048 | Checkout FE con SDK MP + tokenización tarjeta en browser (RN-AU09) + polling estado + UI approved/rejected/pending | 6.1, 4.2, 0.5 |
+
 
 ---
 
