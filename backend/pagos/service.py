@@ -72,10 +72,18 @@ def crear_pago(
             "La forma de pago seleccionada no está disponible actualmente"
         )
 
-    # ── 6. Generate idempotency key ─────────────────────────────────
+    # ── 6. Retry check + external_reference ──────────────────────────
+    existing_pagos = uow.repos.pagos.get_by_pedido(pedido.id)
+    for pago in existing_pagos:
+        if pago.mp_status == "approved":
+            raise ConflictException("PAGO_YA_APROBADO: El pedido ya tiene un pago aprobado")
+    attempt = len(existing_pagos) + 1
+    external_reference = f"{pedido.id}-{attempt}"
+
+    # ── 7. Generate idempotency key ─────────────────────────────────
     idempotency_key = str(uuid.uuid4())
 
-    # ── 7. Build MP payload ─────────────────────────────────────────
+    # ── 8. Build MP payload ─────────────────────────────────────────
     settings = get_settings()
     mp_client = get_mp_client()
 
@@ -86,14 +94,14 @@ def crear_pago(
         "payment_method_id": request.payment_method_id,
         "installments": 1,
         "payer": {"email": current_user.email},
-        "external_reference": str(pedido.id),
+        "external_reference": external_reference,
     }
 
     # Only include notification_url if configured
     if settings.mercadopago_notification_url:
         payment_data["notification_url"] = settings.mercadopago_notification_url
 
-    # ── 8. Call MercadoPago API ─────────────────────────────────────
+    # ── 9. Call MercadoPago API ─────────────────────────────────────
     try:
         from mercadopago.config import RequestOptions
 
@@ -109,17 +117,17 @@ def crear_pago(
             f"PAGO_MP_ERROR: Error al comunicarse con MercadoPago: {exc}"
         )
 
-    # ── 9. Parse MP response ────────────────────────────────────────
+    # ── 10. Parse MP response ───────────────────────────────────────
     mp_response = result.get("response", {})
     mp_payment_id = mp_response.get("id")
     mp_status = mp_response.get("status", "rejected")
 
-    # ── 10. Create Pago record ──────────────────────────────────────
+    # ── 11. Create Pago record ──────────────────────────────────────
     pago = Pago(
         pedido_id=pedido.id,
         mp_payment_id=mp_payment_id,
         mp_status=mp_status,
-        external_reference=str(pedido.id) if mp_payment_id else None,
+        external_reference=external_reference if mp_payment_id else None,
         idempotency_key=idempotency_key,
         monto=request.monto,
         moneda="ARS",
@@ -127,6 +135,33 @@ def crear_pago(
     uow.repos.pagos.add(pago)
 
     return pago
+
+
+def consultar_pagos(
+    uow: UnitOfWork,
+    pedido_id: int,
+    current_user: Usuario,
+) -> list[Pago]:
+    """Return all payment attempts for an order, ordered newest-first.
+
+    Flow:
+    1. Load pedido by ID
+    2. If not found → NotFoundException
+    3. Ownership check: if not ADMIN and pedido doesn't belong to user → 404
+    4. Delegate to repository get_by_pedido()
+    5. Return ordered list
+    """
+    pedido = uow.repos.pedidos.get(pedido_id)
+    if pedido is None:
+        raise NotFoundException("PAGO_PEDIDO_NOT_FOUND")
+
+    user_roles = {ur.rol_codigo for ur in current_user.roles}
+    is_admin = "ADMIN" in user_roles
+
+    if not is_admin and pedido.usuario_id != current_user.id:
+        raise NotFoundException("PAGO_PEDIDO_NOT_FOUND")
+
+    return uow.repos.pagos.get_by_pedido(pedido_id)
 
 
 # ── Webhook Processing ─────────────────────────────────────────────

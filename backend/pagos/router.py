@@ -12,7 +12,7 @@ from backend.core.exceptions import AppException, UnauthorizedException
 from backend.core.uow import UnitOfWork
 from backend.pagos import service as pago_service
 from backend.pagos.repository import PagoRepository
-from backend.pagos.schemas import CrearPagoRequest, PagoResponse
+from backend.pagos.schemas import CrearPagoRequest, PagoRead, PagoResponse
 from backend.pedidos.repository import PedidoRepository
 from backend.usuarios.model import Usuario
 
@@ -52,6 +52,26 @@ def _get_uow() -> Generator[UnitOfWork, None, None]:
 # ------------------------------------------------------------------
 # Endpoints
 # ------------------------------------------------------------------
+
+
+@router.get(
+    "/{pedido_id}",
+    response_model=list[PagoRead],
+    status_code=status.HTTP_200_OK,
+    summary="Get payment attempts for an order",
+)
+def consultar_pagos(
+    pedido_id: int,
+    uow: UnitOfWork = Depends(_get_uow),
+    current_user: Usuario = Depends(require_role("CLIENT", "ADMIN")),
+) -> list[PagoRead]:
+    """Return all payment attempts for a given order, ordered newest-first.
+
+    Client users can only see their own orders. Admin users can see any.
+    Returns empty list if no payments exist.
+    """
+    pagos = pago_service.consultar_pagos(uow, pedido_id, current_user)
+    return [PagoRead.model_validate(p) for p in pagos]
 
 
 @router.post(
