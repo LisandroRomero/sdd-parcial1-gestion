@@ -72,6 +72,7 @@ Notas:
 | — | frontend-sidebar-navigation | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-sidebar-navigation/` |
 
 | — | admin-pedidos-management | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-admin-pedidos-management/` |
+| — | admin-pedidos-fix-acciones | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-admin-pedidos-fix-acciones/` |
 
 > Este change deja listo el **esqueleto monorepo** (`/backend`, `/frontend`), `.gitignore`, `.env.example` y READMEs. **No** instala dependencias ni configura FastAPI/Vite.
 

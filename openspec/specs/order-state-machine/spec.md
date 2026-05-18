@@ -1,3 +1,5 @@
+## Requirements
+
 ### Requirement: El sistema valida transiciones de estado según FSM
 
 El sistema SHALL mantener un mapa explícito de transiciones válidas entre estados del pedido. Toda solicitud de cambio de estado SHALL validarse contra este mapa. Los estados terminales (`ENTREGADO`, `CANCELADO`) NO SHALL admitir transiciones salientes.
