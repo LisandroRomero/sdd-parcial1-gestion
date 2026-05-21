@@ -4,7 +4,7 @@
 >
 > Fuente de verdad de ejecución: `openspec/` (OPSX). Este archivo es un **mapa/plan** para humanos.
 
-**Última actualización:** 2026-05-18
+**Última actualización:** 2026-05-21
 
 ---
 
@@ -146,6 +146,8 @@ Notas:
 |---:|---|---|---|---|---|
 | 8.2 | testing-and-fixtures | Bonus | Pytest: auth/pagos/pedidos/producto + fixtures + mocks MP | Todos | Opcional recomendado |
 | 8.4 | frontend-home-and-navigation | — | Landing page con CTA al catálogo, navbar con links a Catálogo/Mis Pedidos/Perfil, footer | 1.7, 2.6 | Sin nav el usuario no puede moverse por la app |
+| 8.5 | public-home-catalog | — | Home publico + catalogo/productos sin login. | 8.4, 2.6 | 🟡 Planificado. Evidencia: pendiente (OPSX) |
+| 8.6 | require-login-at-checkout | — | Login obligatorio para checkout/pago. | 1.7, 4.2, 6.4 | 🟡 Planificado. Evidencia: pendiente (OPSX) |
 
 ---
 

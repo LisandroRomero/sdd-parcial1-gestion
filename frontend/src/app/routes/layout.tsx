@@ -66,6 +66,14 @@ export function Layout() {
                   Hola, <span className="font-medium text-gray-800">{user.nombre}</span>
                 </span>
               )}
+              {!isAuthenticated && (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Iniciar sesión
+                </button>
+              )}
               {isAuthenticated && (
                 <button
                   onClick={handleLogout}

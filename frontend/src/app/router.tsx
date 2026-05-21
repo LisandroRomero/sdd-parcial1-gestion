@@ -31,15 +31,17 @@ export const router = createBrowserRouter([
       { path: '/register', element: <RegisterPage /> },
     ],
   },
-  // Public routes with Layout (no auth required)
+  // Public branch at / (no auth required)
   {
+    path: '/',
     element: <Layout />,
     children: [
-      { path: '/catalogo', element: <CatalogoPage /> },
-      { path: '/catalogo/:id', element: <ProductoDetallePage /> },
+      { index: true, element: <HomePage /> },
+      { path: 'catalogo', element: <CatalogoPage /> },
+      { path: 'catalogo/:id', element: <ProductoDetallePage /> },
     ],
   },
-  // Protected routes (redirect to /login if not authenticated)
+  // Protected branch at / (redirect to /login if not authenticated)
   {
     path: '/',
     element: <ProtectedRoute />,
@@ -47,30 +49,23 @@ export const router = createBrowserRouter([
       {
         element: <Layout />,
         children: [
-          { index: true, element: <HomePage /> },
           { path: 'perfil', element: <PerfilPage /> },
           { path: 'checkout', element: <CheckoutPage /> },
           { path: 'pedidos', element: <PedidoListPage /> },
           { path: 'pedidos/:id', element: <PedidoDetailPage /> },
-        ],
-      },
-    ],
-  },
-  // Admin routes (requires ADMIN role)
-  {
-    path: '/admin',
-    element: <AdminRoute />,
-    children: [
-      {
-        element: <Layout />,
-        children: [
-          { path: 'usuarios', element: <AdminUsuariosPage /> },
-          { path: 'productos', element: <AdminProductosPage /> },
-          { path: 'categorias', element: <AdminCategoriasPage /> },
-          { path: 'ingredientes', element: <AdminIngredientesPage /> },
-          { path: 'configuracion', element: <AdminConfiguracionPage /> },
-          { path: 'pedidos', element: <AdminPedidosPage /> },
-          { path: 'pedidos/:id', element: <AdminPedidoDetailPage /> },
+          {
+            path: 'admin',
+            element: <AdminRoute />,
+            children: [
+              { path: 'usuarios', element: <AdminUsuariosPage /> },
+              { path: 'productos', element: <AdminProductosPage /> },
+              { path: 'categorias', element: <AdminCategoriasPage /> },
+              { path: 'ingredientes', element: <AdminIngredientesPage /> },
+              { path: 'configuracion', element: <AdminConfiguracionPage /> },
+              { path: 'pedidos', element: <AdminPedidosPage /> },
+              { path: 'pedidos/:id', element: <AdminPedidoDetailPage /> },
+            ],
+          },
         ],
       },
     ],
