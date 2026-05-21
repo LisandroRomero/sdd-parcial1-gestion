@@ -70,6 +70,7 @@ Notas:
 | 8.1 | error-handling-standardized | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-error-handling-standardized/` |
 | 8.3 | frontend-error-and-empty-states | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-error-and-empty-states/` |
 | — | frontend-sidebar-navigation | ✅ Hecho (archivado 2026-05-14) | `openspec/changes/archive/2026-05-14-frontend-sidebar-navigation/` |
+| 8.5 | public-home-catalog | ✅ Hecho (archivado 2026-05-21) | openspec/changes/archive/2026-05-21-public-home-catalog/ |
 
 | — | admin-pedidos-management | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-admin-pedidos-management/` |
 | — | admin-pedidos-fix-acciones | ✅ Hecho (archivado 2026-05-17) | `openspec/changes/archive/2026-05-17-admin-pedidos-fix-acciones/` |
@@ -146,7 +147,6 @@ Notas:
 |---:|---|---|---|---|---|
 | 8.2 | testing-and-fixtures | Bonus | Pytest: auth/pagos/pedidos/producto + fixtures + mocks MP | Todos | Opcional recomendado |
 | 8.4 | frontend-home-and-navigation | — | Landing page con CTA al catálogo, navbar con links a Catálogo/Mis Pedidos/Perfil, footer | 1.7, 2.6 | Sin nav el usuario no puede moverse por la app |
-| 8.5 | public-home-catalog | — | Home publico + catalogo/productos sin login. | 8.4, 2.6 | 🟡 Planificado. Evidencia: pendiente (OPSX) |
 | 8.6 | require-login-at-checkout | — | Login obligatorio para checkout/pago. | 1.7, 4.2, 6.4 | 🟡 Planificado. Evidencia: pendiente (OPSX) |
 
 ---

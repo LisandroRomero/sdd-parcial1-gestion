@@ -440,6 +440,14 @@
       "sessions": 2,
       "memories": 13,
       "prompts": 14
+    },
+    {
+      "id": "b873c26a",
+      "created_by": "lisan",
+      "created_at": "2026-05-21T20:54:15Z",
+      "sessions": 0,
+      "memories": 3,
+      "prompts": 2
     }
   ]
 }
